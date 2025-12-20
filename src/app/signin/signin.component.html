@@ -13,7 +13,7 @@
         <label for="password">Password</label>
       </p-floatLabel>
       <br>
-      <p-button label="Sign In" [disabled]="checkForm()"/>
+      <p-button label="Sign In" [disabled]="checkForm()" (click)="login()"/>
     </p>
   </p-card>
 </div>

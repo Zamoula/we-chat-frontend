@@ -6,7 +6,7 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { PasswordModule } from 'primeng/password';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-signin',
@@ -29,12 +29,16 @@ export class SigninComponent{
   email: any;
   password: any;
 
-  constructor() {
+  constructor(private router: Router) {
   }
 
   //helper methods
   checkForm(): boolean {
     return this.email != ''
       && this.password != '';
+  }
+
+  login() {
+    this.router.navigate(['/home']);
   }
 }

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { FloatLabelModule } from 'primeng/floatlabel';
@@ -39,6 +39,8 @@ export class SignupComponent {
   }
   visible: boolean = false;
 
+  constructor(private router: Router) {}
+
   register(user: any) {
     console.log(user);
     this.showDialog();
@@ -60,6 +62,7 @@ export class SignupComponent {
     const value = (event.target as HTMLInputElement).value;
     if (value.length == 8) {
       this.visible = false;
+      this.router.navigate(['/home']);
     }
   }
 
