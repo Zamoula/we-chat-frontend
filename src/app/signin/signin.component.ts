@@ -6,8 +6,7 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { PasswordModule } from 'primeng/password';
-import { RouterModule, Routes } from '@angular/router'; // ← Add this import
-import { routes } from '../app.routes';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-signin',
@@ -26,21 +25,16 @@ import { routes } from '../app.routes';
   templateUrl: './signin.component.html',
   styleUrl: './signin.component.scss'
 })
-export class SigninComponent implements OnInit{
-  loginForm: FormGroup;
+export class SigninComponent{
   email: any;
   password: any;
 
-  loading: boolean = false;
-
-  constructor(private fb: FormBuilder) {
-    this.loginForm = this.fb.group({
-      username: ['', Validators.required],
-      password: ['', Validators.required],
-      rememberMe: [false]
-    });
+  constructor() {
   }
 
-  ngOnInit(): void {
+  //helper methods
+  checkForm(): boolean {
+    return this.email != ''
+      && this.password != '';
   }
 }
