@@ -1,1 +1,29 @@
-<p>signup works!</p>
+<div class="container">
+  <p-card header="Register">
+    <p class="m-0">
+      <a [routerLink]="['/signin']">← <strong>Back</strong></a>
+      <br><br><br>
+      <p-floatlabel>
+        <input pInputText id="username" [(ngModel)]="user.username" autocomplete="off" />
+        <label for="username">Username</label>
+      </p-floatlabel>
+      <br><br>
+      <p-floatlabel>
+        <input pInputText id="email" [(ngModel)]="user.email" autocomplete="off" />
+        <label for="email">Email</label>
+      </p-floatlabel>
+      <br><br>
+      <p-floatLabel>
+        <p-password [(ngModel)]="user.password" inputId="password" [feedback]="false" [toggleMask]="true" />
+        <label for="password">Password</label>
+      </p-floatLabel>
+      <br><br>
+      <p-floatLabel>
+        <p-password [(ngModel)]="confirmPassword" inputId="confirmPassword" [feedback]="false" [toggleMask]="true" />
+        <label for="confirmPassword">Confirm Password</label>
+      </p-floatLabel>
+      <br>
+      <p-button label="Sign In" (click)="register(user)"/>
+    </p>
+  </p-card>
+</div>
