@@ -41,4 +41,12 @@ export class SignupComponent {
     
   }
 
+  //helper methods
+  checkForm(): boolean {
+    return this.user.password == this.confirmPassword 
+      && this.user.username != ''
+      && this.user.email != ''
+      && this.user.password != '';
+  }
+
 }

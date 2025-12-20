@@ -23,7 +23,7 @@
         <label for="confirmPassword">Confirm Password</label>
       </p-floatLabel>
       <br>
-      <p-button label="Sign In" (click)="register(user)"/>
+      <p-button label="Sign In" (click)="register(user)" [disabled]="!checkForm()"/>
     </p>
   </p-card>
 </div>
