@@ -8,6 +8,7 @@ import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
 import { Password, PasswordModule } from 'primeng/password';
 import { DividerModule } from 'primeng/divider';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-signup',
@@ -22,7 +23,8 @@ import { DividerModule } from 'primeng/divider';
         FloatLabelModule,
         CommonModule,
         RouterModule,
-        DividerModule
+        DividerModule,
+        DialogModule
   ],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.scss'
@@ -35,10 +37,11 @@ export class SignupComponent {
     email: '',
     password: ''
   }
+  visible: boolean = false;
 
   register(user: any) {
     console.log(user);
-    
+    this.showDialog();
   }
 
   //helper methods
@@ -47,6 +50,17 @@ export class SignupComponent {
       && this.user.username != ''
       && this.user.email != ''
       && this.user.password != '';
+  }
+
+  showDialog() {
+    this.visible = true;
+  }
+
+  onType(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    if (value.length == 8) {
+      this.visible = false;
+    }
   }
 
 }

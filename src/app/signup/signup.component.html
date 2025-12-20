@@ -22,8 +22,15 @@
         <p-password [(ngModel)]="confirmPassword" inputId="confirmPassword" [feedback]="false" [toggleMask]="true" />
         <label for="confirmPassword">Confirm Password</label>
       </p-floatLabel>
-      <br>
-      <p-button label="Sign In" (click)="register(user)" [disabled]="!checkForm()"/>
+      <br><br>
+      <p-button [style]="{width: '100%'}" label="Sign In" (click)="register(user)" [disabled]="!checkForm()"/>
     </p>
   </p-card>
 </div>
+
+<!--DIALOG-->
+<p-dialog [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
+    <p>A verification code has been sent to your email address. Please check your inbox and spam folder.</p>
+    <input (input)="onType($event)" pInputText id="verificationCode" class="flex-auto" autocomplete="off" style="width: 100%;"/>
+    <p>Fill in the input field with the verification code sent to your email to proceed with registration.</p>
+</p-dialog>
