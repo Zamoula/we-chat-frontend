@@ -1,0 +1,19 @@
+<div class="container">
+  <p-card header="Login">
+    <p class="m-0">
+      <a [routerLink]="['/signup']">Don't have an account ? <strong>Tap Here</strong></a>
+      <br><br><br>
+      <p-floatlabel>
+        <input pInputText id="email" [(ngModel)]="email" autocomplete="off" />
+        <label for="email">Email</label>
+      </p-floatlabel>
+      <br><br>
+      <p-floatLabel>
+        <p-password [(ngModel)]="password" inputId="password" [feedback]="false" [toggleMask]="true" />
+        <label for="password">Password</label>
+      </p-floatLabel>
+      <br>
+      <p-button label="Sign In"/>
+    </p>
+  </p-card>
+</div>
