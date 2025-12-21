@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Chat } from '../../models/chat.model';
 import { ChatService } from '../../services/chat.service';
 import { InputTextModule } from 'primeng/inputtext';
@@ -21,8 +21,9 @@ import { timestamp } from 'rxjs';
   templateUrl: './chat-details.component.html',
   styleUrl: './chat-details.component.scss'
 })
-export class ChatDetailsComponent implements OnInit{
+export class ChatDetailsComponent implements OnInit, AfterViewInit{
 
+    @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
   chat: any;
   message: any = '';
   messages: any[] = messages;
@@ -34,7 +35,10 @@ export class ChatDetailsComponent implements OnInit{
   ngOnInit(): void {
     this.chat = JSON.parse(localStorage.getItem("selectedChat") ?? '{}');
     console.warn(this.chat);
-    
+  }
+
+  ngAfterViewInit() {
+    this.scrollToBottom();
   }
 
   sendMessage() {
@@ -52,6 +56,8 @@ export class ChatDetailsComponent implements OnInit{
     this.messages.push(m);
     (this.message); // send via WS / HTTP
     this.message = '';
+
+    this.scrollToBottom();
   }
 
   // helper methods
@@ -89,5 +95,17 @@ export class ChatDetailsComponent implements OnInit{
     let user = JSON.parse(userString ?? '{}');
 
     return sender == user.username;
+  }
+
+  scrollToBottom(): void {
+    try {
+      // Use setTimeout to ensure DOM has updated with the new message
+      setTimeout(() => {
+        const element = this.scrollContainer.nativeElement;
+        element.scrollTop = element.scrollHeight;
+      }, 0);
+    } catch(err) { 
+      console.error('Error scrolling to bottom:', err);
+    }
   }
 }
