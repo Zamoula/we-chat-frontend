@@ -29,8 +29,14 @@
 </div>
 
 <!--DIALOG-->
-<p-dialog [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
-    <p>A verification code has been sent to your email address. Please check your inbox and spam folder.</p>
+  <p-dialog [modal]="true" [(visible)]="errorMessage" [style]="{ width: '25rem' }">
+    <p class="dialog-msg">An error Occurred, please try again later.</p>
+  </p-dialog>
+
+  <p-dialog [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
+    <p class="dialog-msg">A verification code will be sent to your email address within 5 minutes. Please check your inbox and spam folder.</p>
+    <br><br>
     <input (input)="onType($event)" pInputText id="verificationCode" class="flex-auto" autocomplete="off" style="width: 100%;"/>
-    <p>Fill in the input field with the verification code sent to your email to proceed with registration.</p>
-</p-dialog>
+    <br><br>
+    <p class="dialog-msg">Fill in the input field with the verification code sent to your email to proceed with registration.</p>
+  </p-dialog>

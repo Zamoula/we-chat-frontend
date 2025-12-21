@@ -6,9 +6,11 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
-import { Password, PasswordModule } from 'primeng/password';
+import { PasswordModule } from 'primeng/password';
 import { DividerModule } from 'primeng/divider';
 import { DialogModule } from 'primeng/dialog';
+import { AuthService } from '../services/auth.service';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-signup',
@@ -38,12 +40,31 @@ export class SignupComponent {
     password: ''
   }
   visible: boolean = false;
+  errorMessage: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private userService: UserService
+  ) {}
 
   register(user: any) {
-    console.log(user);
-    this.showDialog();
+    console.log('FORM VALUE :', user);
+    this.authService.register(user).subscribe({
+      next: data => {
+        this.showDialog();
+        localStorage.setItem('access_token', data.jwt_token);
+      },
+      error: err => {
+        this.errorMessage = true;
+      },
+      complete: () => {
+        this.userService.getInfo().subscribe({
+          next: data => {
+            localStorage.setItem('user', JSON.stringify(data));
+          }})
+      }
+    });
   }
 
   //helper methods
