@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { ListboxModule } from 'primeng/listbox';
 import { Avatar } from 'primeng/avatar';
 import { AvatarGroup } from 'primeng/avatargroup';
+import { Router } from '@angular/router';
 
 interface Chat {
   id: any,
@@ -45,6 +46,12 @@ export class HomeComponent {
   ];
 
   selectedChat?: Chat;
+
+  constructor(private router: Router) {}
+
+  navigateToChat(id :any) {
+    this.router.navigate(['/chats', id]);
+  }
 
   // helper methods
   getAvatarUrl(name: string): string {

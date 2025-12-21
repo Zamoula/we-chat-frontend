@@ -13,7 +13,7 @@
   [listStyle]="{ maxHeight: '100vh' }"
 >
   <ng-template let-chat pTemplate="item">
-    <div class="chat-item">
+    <div class="chat-item" (click) = "navigateToChat(chat.id)">
       <div class="chat-main">
         <p-avatar
         [image]="getAvatarUrl(chat.name)"
