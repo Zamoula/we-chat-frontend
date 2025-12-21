@@ -11,12 +11,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabel } from 'primeng/floatlabel';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { ChatService } from '../../services/chat.service';
-
-interface Chat {
-  id: any,
-  name: any,
-  lastMessage: any,updatedAt: any, unread?: any
-}
+import { Chat } from '../../models/chat.model';
 
 @Component({
   selector: 'app-home',
@@ -38,21 +33,7 @@ interface Chat {
 })
 export class HomeComponent implements OnInit{
 
-  chats: Chat[] = [
-    {
-      id: '1',
-      name: 'Alice',
-      lastMessage: 'See you later',
-      updatedAt: new Date(),
-      unread: 2
-    },
-    {
-      id: '2',
-      name: 'Dev Team',
-      lastMessage: 'PR merged',
-      updatedAt: new Date()
-    }
-  ];
+  chats: Chat[] = [];
   user: any;
   selectedChat?: Chat;
   visible: boolean = false;
@@ -71,6 +52,7 @@ export class HomeComponent implements OnInit{
     console.warn(localStorage.getItem('access_token'));
 
     // fetch user chats
+    this.getRooms();
     // subscribe to ws topics
   }
 
@@ -91,6 +73,18 @@ export class HomeComponent implements OnInit{
     this.newChatName = '';
     this.newRoom_type = 'PUBLIC'
     this.visible = false;
+  }
+
+  getRooms(){
+    this.chatService.getChatRooms(this.user.id).subscribe({
+      next: (data) => {
+        this.chats = data;
+      },
+      error: (err) => {},
+      complete: () => {
+        console.warn(this.chats);
+      }
+    });
   }
 
   navigateToChat(id :any) {

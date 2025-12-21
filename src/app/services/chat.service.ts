@@ -14,4 +14,8 @@ export class ChatService {
   create(room :any): Observable<any> {
     return this.http.post<any>(this.url, room);
   }
+
+  getChatRooms(userId: any): Observable<any[]> {
+    return this.http.get<any[]>(this.url + `/${userId}`);
+  }
 }
