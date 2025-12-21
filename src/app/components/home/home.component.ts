@@ -10,6 +10,7 @@ import { Dialog } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabel } from 'primeng/floatlabel';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { ChatService } from '../../services/chat.service';
 
 interface Chat {
   id: any,
@@ -52,17 +53,21 @@ export class HomeComponent implements OnInit{
       updatedAt: new Date()
     }
   ];
-
+  user: any;
   selectedChat?: Chat;
   visible: boolean = true;
   newChatName: string = '';
-  newRoom_type: string = 'PUBLIC';
+  newRoom_type: string = '';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private chatService: ChatService
+  ) {}
 
   ngOnInit(): void {
     let u = localStorage.getItem('user');
-    console.warn(JSON.parse(u ?? '{}'));
+    this.user = JSON.parse(u ?? '{}');
+    console.warn(this.user);
     console.warn(localStorage.getItem('access_token'));
 
     // fetch user chats
@@ -73,9 +78,14 @@ export class HomeComponent implements OnInit{
     const room = {
       name: this.newChatName,
       type: this.newRoom_type,
-      participants: []
+      participants: [this.user.id]
     };
-    console.warn(room);
+    console.warn('ROOM FORM VALUE :',room);
+    this.chatService.create(room).subscribe({
+      next: data => {
+        console.warn(data);
+      }
+    });
 
     //reset values
     this.newChatName = '';
