@@ -7,6 +7,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { PasswordModule } from 'primeng/password';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-signin',
@@ -26,10 +28,14 @@ import { Router, RouterModule } from '@angular/router';
   styleUrl: './signin.component.scss'
 })
 export class SigninComponent{
-  email: any;
-  password: any;
+  email: any = '';
+  password: any = '';
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private userService: UserService
+  ) {
   }
 
   //helper methods
@@ -39,6 +45,22 @@ export class SigninComponent{
   }
 
   login() {
-    this.router.navigate(['/home']);
+    const user = {
+      username: this.email,
+      password: this.password
+    };
+    console.warn('FORM VALUE :', user);
+    this.authService.login(user).subscribe({
+      next: data => {
+        localStorage.setItem('access_token', data.jwt_token);
+      },
+      complete: () => {
+        this.userService.getInfo().subscribe({
+          next: data => {
+            localStorage.setItem('user', JSON.stringify(data));
+          }});
+          this.router.navigate(['/home']);
+      }
+    });
   }
 }
