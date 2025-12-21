@@ -6,6 +6,10 @@ import { ListboxModule } from 'primeng/listbox';
 import { Avatar } from 'primeng/avatar';
 import { AvatarGroup } from 'primeng/avatargroup';
 import { Router } from '@angular/router';
+import { Dialog } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { FloatLabel } from 'primeng/floatlabel';
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 interface Chat {
   id: any,
@@ -22,7 +26,11 @@ interface Chat {
     ButtonModule,
     ListboxModule,
     Avatar,
-    AvatarGroup
+    AvatarGroup,
+    Dialog,
+    InputTextModule,
+    FloatLabel,
+    RadioButtonModule
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
@@ -46,6 +54,9 @@ export class HomeComponent implements OnInit{
   ];
 
   selectedChat?: Chat;
+  visible: boolean = true;
+  newChatName: string = '';
+  newRoom_type: string = 'PUBLIC';
 
   constructor(private router: Router) {}
 
@@ -56,6 +67,20 @@ export class HomeComponent implements OnInit{
 
     // fetch user chats
     // subscribe to ws topics
+  }
+
+  createRoom() {
+    const room = {
+      name: this.newChatName,
+      type: this.newRoom_type,
+      participants: []
+    };
+    console.warn(room);
+
+    //reset values
+    this.newChatName = '';
+    this.newRoom_type = 'PUBLIC'
+    this.visible = false;
   }
 
   navigateToChat(id :any) {
@@ -69,6 +94,10 @@ export class HomeComponent implements OnInit{
   // helper methods
   getAvatarUrl(name: string): string {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
+  }
+
+  showDialog() {
+    this.visible = true;
   }
 
 }
