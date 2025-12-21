@@ -27,7 +27,7 @@ import { UserService } from '../services/user.service';
   templateUrl: './signin.component.html',
   styleUrl: './signin.component.scss'
 })
-export class SigninComponent{
+export class SigninComponent implements OnInit{
   email: any = '';
   password: any = '';
 
@@ -35,7 +35,12 @@ export class SigninComponent{
     private router: Router,
     private authService: AuthService,
     private userService: UserService
-  ) {
+  ) {}
+
+  ngOnInit(): void {
+    if(localStorage.getItem('access_token') || localStorage.getItem('user')) {
+      this.router.navigate(['/home']);
+    }
   }
 
   //helper methods

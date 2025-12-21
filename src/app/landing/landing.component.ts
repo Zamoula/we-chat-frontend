@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 
@@ -9,9 +9,15 @@ import { ButtonModule } from 'primeng/button';
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.scss'
 })
-export class LandingComponent {
+export class LandingComponent implements OnInit{
 
   constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    if(localStorage.getItem('access_token') || localStorage.getItem('user')) {
+      this.router.navigate(['/home']);
+    }
+  }
 
   navigateToSignIn() {
     this.router.navigate(['/signin']);

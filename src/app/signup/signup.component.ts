@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -31,7 +31,7 @@ import { UserService } from '../services/user.service';
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.scss'
 })
-export class SignupComponent {
+export class SignupComponent implements OnInit{
 
   confirmPassword: any = '';
   user: any = {
@@ -47,6 +47,12 @@ export class SignupComponent {
     private authService: AuthService,
     private userService: UserService
   ) {}
+
+  ngOnInit(): void {
+    if(localStorage.getItem('access_token') || localStorage.getItem('user')) {
+      this.router.navigate(['/home']);
+    }
+  }
 
   register(user: any) {
     console.log('FORM VALUE :', user);
