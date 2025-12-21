@@ -1,6 +1,10 @@
 <div class="header">
     <h2>WeChat</h2>
-    <i class="pi pi pi-cog" style="font-size: 1.5rem"></i>
+    <div class="header-right">
+      <i class="pi pi-user" (click)="navigateToProfile()" style="font-size: 1.5rem"></i>
+      <i class="pi pi pi-cog" style="font-size: 1.5rem"></i>
+    </div>
+    
 </div>
 <p-button icon="pi pi-plus" [rounded]="true" [style]="{ width: '4rem', height: '4rem' }" class="fab-btn" variant="outlined" severity="success" />
 

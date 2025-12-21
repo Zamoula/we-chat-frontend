@@ -1,0 +1,27 @@
+<div class="container m-0">
+    <div class="header">
+        <img [src]="getAvatarUrl(user.username)" alt="avatar">
+        <h2>PROFILE</h2>
+    </div>
+    <br>
+    <div class="card">
+        <p-floatlabel>
+            <input pInputText id="username" [(ngModel)]="user.username" autocomplete="off" />
+            <label for="username">Username</label>
+        </p-floatlabel>
+    </div>
+    <div class="card">
+        <p-floatlabel>
+            <input pInputText id="email" [(ngModel)]="user.email" autocomplete="off" />
+            <label for="email">Email</label>
+        </p-floatlabel>
+    </div>
+    <div class="card bio">
+        <p-floatlabel>
+            <textarea rows="5" cols="34" pTextarea [(ngModel)]="user.bio" autocomplete="off"></textarea>
+            <label for="bio">bio</label>
+        </p-floatlabel>
+    </div>
+    <br>
+    <p-button (click)="updateUser()" label="save" variant="outlined" />
+</div>

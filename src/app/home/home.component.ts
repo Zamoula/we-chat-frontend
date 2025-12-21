@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { ListboxModule } from 'primeng/listbox';
@@ -27,7 +27,7 @@ interface Chat {
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit{
 
   chats: Chat[] = [
     {
@@ -49,8 +49,19 @@ export class HomeComponent {
 
   constructor(private router: Router) {}
 
+  ngOnInit(): void {
+    let u = localStorage.getItem('user');
+    console.warn(JSON.parse(u ?? '{}'));
+    console.warn(localStorage.getItem('access_token'));
+    
+  }
+
   navigateToChat(id :any) {
     this.router.navigate(['/chats', id]);
+  }
+
+  navigateToProfile() {
+    this.router.navigate(['/profile']);
   }
 
   // helper methods
