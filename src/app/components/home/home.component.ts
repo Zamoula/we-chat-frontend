@@ -55,7 +55,7 @@ export class HomeComponent implements OnInit{
   ];
   user: any;
   selectedChat?: Chat;
-  visible: boolean = true;
+  visible: boolean = false;
   newChatName: string = '';
   newRoom_type: string = '';
 
