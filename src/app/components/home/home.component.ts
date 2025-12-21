@@ -48,8 +48,8 @@ export class HomeComponent implements OnInit{
   ngOnInit(): void {
     let u = localStorage.getItem('user');
     this.user = JSON.parse(u ?? '{}');
-    console.warn(this.user);
-    console.warn(localStorage.getItem('access_token'));
+    //console.warn(this.user);
+    //console.warn(localStorage.getItem('access_token'));
 
     // fetch user chats
     this.getRooms();
@@ -82,13 +82,16 @@ export class HomeComponent implements OnInit{
       },
       error: (err) => {},
       complete: () => {
-        console.warn(this.chats);
+        //console.warn(this.chats);
       }
     });
   }
 
-  navigateToChat(id :any) {
-    this.router.navigate(['/chats', id]);
+  navigateToChat(c :any) {
+    this.router.navigate(['/chats', c.id]);
+    this.selectedChat = c;
+    //console.warn(this.selectedChat);
+    localStorage.setItem("selectedChat", JSON.stringify(c));
   }
 
   navigateToProfile() {
