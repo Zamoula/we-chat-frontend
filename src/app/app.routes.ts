@@ -1,10 +1,11 @@
 import { Routes } from '@angular/router';
-import { LandingComponent } from './landing/landing.component';
-import { SigninComponent } from './signin/signin.component';
-import { SignupComponent } from './signup/signup.component';
-import { HomeComponent } from './home/home.component';
-import { ChatDetailsComponent } from './chat-details/chat-details.component';
-import { ProfileComponent } from './profile/profile.component';
+import { LandingComponent } from './components/landing/landing.component';
+
+import { HomeComponent } from './components/home/home.component';
+import { ChatDetailsComponent } from './components/chat-details/chat-details.component';
+import { ProfileComponent } from './components/profile/profile.component';
+import { SigninComponent } from './components/signin/signin.component';
+import { SignupComponent } from './components/signup/signup.component';
 
 export const routes: Routes = [
     {path: "", component: LandingComponent},

@@ -53,7 +53,9 @@ export class HomeComponent implements OnInit{
     let u = localStorage.getItem('user');
     console.warn(JSON.parse(u ?? '{}'));
     console.warn(localStorage.getItem('access_token'));
-    
+
+    // fetch user chats
+    // subscribe to ws topics
   }
 
   navigateToChat(id :any) {
