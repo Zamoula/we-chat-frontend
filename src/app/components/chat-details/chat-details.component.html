@@ -55,3 +55,15 @@
         ></button>
     </div>
 </div>
+
+<p-toast position="bottom-right"/>
+<!--DIALOG-->
+<p-dialog header="Info" [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
+    <span class="p-text-secondary block mb-8">Invite members</span>
+    <br><br>
+    
+    <div class="flex items-center gap-4 mb-8">
+        <input class="link" pInputText id="email" [disabled]="true" [(ngModel)]="link"/>
+        <i (click)="copyText()" style="margin-left: 10px;" class="pi pi-clone"></i>
+    </div>
+</p-dialog>

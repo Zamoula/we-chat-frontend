@@ -6,7 +6,10 @@ import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { messages } from '../../mock_data/messages.data';
-import { timestamp } from 'rxjs';
+import { DialogModule } from 'primeng/dialog';
+import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard';
+import { Toast, ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-chat-details',
@@ -16,25 +19,36 @@ import { timestamp } from 'rxjs';
     ButtonModule,
     CommonModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    DialogModule,
+    ClipboardModule,
+    ToastModule,
+    Toast
   ],
+  providers: [MessageService],
   templateUrl: './chat-details.component.html',
   styleUrl: './chat-details.component.scss'
 })
 export class ChatDetailsComponent implements OnInit, AfterViewInit{
 
-    @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
+  @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
   chat: any;
   message: any = '';
   messages: any[] = messages;
+  visible: boolean = true;
+  link: any = 'http://localhost:4200/chats/';
 
   constructor(
-    private chatService: ChatService
+    private chatService: ChatService,
+    private clipboard: Clipboard,
+    private messageService: MessageService
   ) {}
 
   ngOnInit(): void {
     this.chat = JSON.parse(localStorage.getItem("selectedChat") ?? '{}');
     console.warn(this.chat);
+    this.link = this.link + `${this.chat.id}`
+    console.warn(this.link);
   }
 
   ngAfterViewInit() {
@@ -107,5 +121,10 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit{
     } catch(err) { 
       console.error('Error scrolling to bottom:', err);
     }
+  }
+
+  copyText(): void {
+    this.clipboard.copy(this.link);
+    this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Copied to clipboard !' });
   }
 }
