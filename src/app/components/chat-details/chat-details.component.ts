@@ -35,7 +35,7 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit{
   chat: any;
   message: any = '';
   messages: any[] = messages;
-  visible: boolean = true;
+  visible: boolean = false;
   link: any = 'http://localhost:4200/chats/';
 
   constructor(
