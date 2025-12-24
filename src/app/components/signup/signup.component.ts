@@ -10,7 +10,6 @@ import { PasswordModule } from 'primeng/password';
 import { DividerModule } from 'primeng/divider';
 import { DialogModule } from 'primeng/dialog';
 import { AuthService } from '../../services/auth.service';
-import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-signup',
@@ -44,32 +43,26 @@ export class SignupComponent implements OnInit{
 
   constructor(
     private router: Router,
-    private authService: AuthService,
-    private userService: UserService
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    if(localStorage.getItem('access_token') || localStorage.getItem('user')) {
+    if(localStorage.getItem('access_token') && localStorage.getItem('user')) {
       this.router.navigate(['/home']);
     }
   }
 
   register(user: any) {
-    console.log('FORM VALUE :', user);
     this.authService.register(user).subscribe({
       next: data => {
         this.showDialog();
-        localStorage.setItem('access_token', data.jwt_token);
+        localStorage.setItem('access_token', data.accessToken);
+        localStorage.setItem('user', JSON.stringify(data.user));
       },
       error: err => {
         this.errorMessage = true;
       },
-      complete: () => {
-        this.userService.getInfo().subscribe({
-          next: data => {
-            localStorage.setItem('user', JSON.stringify(data));
-          }})
-      }
+      complete: () => {}
     });
   }
 

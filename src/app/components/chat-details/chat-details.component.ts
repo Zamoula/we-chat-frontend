@@ -10,6 +10,7 @@ import { DialogModule } from 'primeng/dialog';
 import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard';
 import { Toast, ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-chat-details',
@@ -32,23 +33,22 @@ import { MessageService } from 'primeng/api';
 export class ChatDetailsComponent implements OnInit, AfterViewInit{
 
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
-  chat: any;
+  chat!: Chat;
   message: any = '';
   messages: any[] = messages;
   visible: boolean = false;
+  isMember: boolean = false;
   link: any = 'http://localhost:4200/chats/';
 
   constructor(
     private chatService: ChatService,
     private clipboard: Clipboard,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    this.chat = JSON.parse(localStorage.getItem("selectedChat") ?? '{}');
-    console.warn(this.chat);
-    this.link = this.link + `${this.chat.id}`
-    console.warn(this.link);
+    this.fetchRoom();
   }
 
   ngAfterViewInit() {
@@ -74,8 +74,49 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit{
     this.scrollToBottom();
   }
 
+  participate() {
+    let u = JSON.parse(localStorage.getItem('user') ?? '{}');
+    console.log(u);
+    let u_obj = {
+      id: u.id,
+      username: u.username,
+      email: u.email,
+      phone: u.phone
+    };
+    this.chatService.participate(this.route.snapshot.paramMap.get('id'), u_obj).subscribe({
+      next: (data) => {
+        this.chat = data;
+      },
+      complete: () => {
+        this.messageService.add({ severity: 'success', summary: 'Welcome !', detail: `you have joined ${this.chat.name}` });
+        this.isMember = false;
+      }
+    });
+  }
+
+  fetchRoom() {
+      this.chatService.getRoom(this.route.snapshot.paramMap.get('id')).subscribe({
+      next: (data) => {
+        console.log(data);
+        this.chat = data;
+      },
+      complete: () => {
+        this.link = this.link + `${this.chat.id}`;
+        let user = JSON.parse(localStorage.getItem("user") ?? '{}');
+
+        //check if user is participants
+        if(!this.chat.participants?.some(u => u.email === user.email)) {
+          this.isMember = true;
+        }
+      }});
+  }
+
   // helper methods
-  getAvatarUrl(name: string): string {
+  getAvatarUrl(name: any): string {
+    let c = JSON.parse(localStorage.getItem("selectedChat") ?? '{}');
+    if(name == null) {
+          return `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=random&color=fff`;
+    }
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
   }
 
@@ -104,7 +145,7 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit{
     return `${day} ${time}`; // e.g. Mon 18:42
   }
 
-  verifSender(sender: any): boolean{
+  verifSender(sender: any): boolean {
     let userString = localStorage.getItem("user");
     let user = JSON.parse(userString ?? '{}');
 

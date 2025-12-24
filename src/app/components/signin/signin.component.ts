@@ -2,13 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { PasswordModule } from 'primeng/password';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-signin',
@@ -33,12 +32,11 @@ export class SigninComponent implements OnInit{
 
   constructor(
     private router: Router,
-    private authService: AuthService,
-    private userService: UserService
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    if(localStorage.getItem('access_token') || localStorage.getItem('user')) {
+    if(localStorage.getItem('access_token') && localStorage.getItem('user')) {
       this.router.navigate(['/home']);
     }
   }
@@ -51,20 +49,16 @@ export class SigninComponent implements OnInit{
 
   login() {
     const user = {
-      username: this.email,
+      email: this.email,
       password: this.password
     };
-    console.warn('FORM VALUE :', user);
     this.authService.login(user).subscribe({
       next: data => {
-        localStorage.setItem('access_token', data.jwt_token);
+        localStorage.setItem('access_token', data.accessToken);
+        localStorage.setItem('user', JSON.stringify(data.user));
       },
       complete: () => {
-        this.userService.getInfo().subscribe({
-          next: data => {
-            localStorage.setItem('user', JSON.stringify(data));
-          }});
-          this.router.navigate(['/home']);
+        this.router.navigate(['/home']);
       }
     });
   }
