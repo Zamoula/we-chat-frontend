@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { ListboxModule } from 'primeng/listbox';
@@ -40,7 +40,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent implements OnInit{
+export class HomeComponent implements OnInit, OnDestroy {
 
   // Connection status
   isConnected: boolean = false;
@@ -68,39 +68,66 @@ export class HomeComponent implements OnInit{
   ) {}
 
   async ngOnInit(): Promise<void> {
-    //localStorage.clear();
+    // Check authentication
     if(!localStorage.getItem("access_token")) {
       this.router.navigate(['']);
+      return;
     }
-    console.log(localStorage.getItem("access_token"));
-    
-    //this.webSocketService.connect();
-    //init credentials
-    this.initCredentials();
+
+    // Initialize user credentials first
+    await this.initCredentials();
 
     // Subscribe to connection status
     this.connectionSubscription = this.webSocketService
       .getConnectionStatus()
       .subscribe(status => {
+        console.log('Connection status changed:', status);
         this.isConnected = status;
-        console.log(status);
 
         // If reconnected, resubscribe to all chatrooms
         if (status && this.chats.length > 0) {
-          this.getRooms();
+          this.resubscribeToAllChatrooms();
         }
       });
-      //this.chats = JSON.parse(localStorage.getItem('chats') ?? '[]');
-      //console.log(this.chats);
+
+    // Connect to WebSocket and wait for connection
+    try {
+      console.log('Connecting to WebSocket...');
+      await this.webSocketService.connect();
+      console.log('WebSocket connected successfully');
       
-      // Load chatrooms from API
-      if(true) {
-        await this.getRooms();
-      }
+      // Wait a moment for connection to stabilize
+      await this.delay(300);
+      
+      // Now load and subscribe to rooms
+      await this.getRooms();
+      
+    } catch (error) {
+      console.error('Failed to connect to WebSocket:', error);
+    }
   }
 
-  // subscriptions
+  ngOnDestroy(): void {
+    // Clean up subscriptions
+    this.messageSubscriptions.forEach(sub => sub.unsubscribe());
+    this.messageSubscriptions.clear();
+    this.connectionSubscription?.unsubscribe();
+    this.webSocketService.disconnect();
+  }
+
+  // Helper method to add delay
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Subscriptions
   subscribeToAllChatrooms(): void {
+    if (!this.webSocketService.isConnected()) {
+      console.error('Cannot subscribe - WebSocket not connected');
+      return;
+    }
+
+    console.log(`Subscribing to ${this.chats.length} chatrooms...`);
     this.chats.forEach(chatroom => {
       this.subscribeToChatroom(chatroom.id);
     });
@@ -109,15 +136,29 @@ export class HomeComponent implements OnInit{
   subscribeToChatroom(chatroomId: string): void {
     // Check if already subscribed
     if (this.messageSubscriptions.has(chatroomId)) {
+      console.log('Already subscribed to:', chatroomId);
       return;
     }
+
+    if (!this.webSocketService.isConnected()) {
+      console.error('Cannot subscribe to', chatroomId, '- not connected');
+      return;
+    }
+
+    console.log('Subscribing to chatroom:', chatroomId);
 
     // Subscribe to chatroom messages
     const subscription = this.webSocketService
       .subscribeToChatroom(chatroomId)
-      .subscribe(message => {
-        if (message) {
-          this.handleIncomingMessage(chatroomId, message);
+      .subscribe({
+        next: (message) => {
+          if (message) {
+            console.log('Received message in room', chatroomId, ':', message);
+            this.handleIncomingMessage(chatroomId, message);
+          }
+        },
+        error: (error) => {
+          console.error('Error in subscription for', chatroomId, ':', error);
         }
       });
 
@@ -125,6 +166,8 @@ export class HomeComponent implements OnInit{
   }
 
   resubscribeToAllChatrooms(): void {
+    console.log('Resubscribing to all chatrooms...');
+    
     // Clear existing subscriptions
     this.messageSubscriptions.forEach(sub => sub.unsubscribe());
     this.messageSubscriptions.clear();
@@ -133,7 +176,7 @@ export class HomeComponent implements OnInit{
     this.subscribeToAllChatrooms();
     
     // Rejoin active chatroom if username is set
-    if (this.activeChatroomId && this.user.username) {
+    if (this.activeChatroomId && this.user?.username) {
       this.webSocketService.joinChatroom(this.activeChatroomId, this.user.username);
     }
   }
@@ -155,56 +198,85 @@ export class HomeComponent implements OnInit{
     }
   }
 
-  // rooms
+  // Rooms
   createRoom() {
     const room = {
       name: this.newChatName,
       type: this.newRoom_type,
       participants: [this.user.id]
     };
+    
     this.chatService.create(room).subscribe({
       next: data => {
-        console.warn(data);
+        console.log('Room created:', data);
         this.chats.push(data);
-        console.warn(this.chats);
         localStorage.setItem('chats', JSON.stringify(this.chats));
+        
+        // Subscribe to the new room if connected
+        if (this.webSocketService.isConnected()) {
+          this.subscribeToChatroom(data.id);
+        }
+      },
+      error: (err) => {
+        console.error('Error creating room:', err);
       }
     });
 
-    //reset values
+    // Reset values
     this.newChatName = '';
-    this.newRoom_type = 'PUBLIC'
+    this.newRoom_type = 'PUBLIC';
     this.visible = false;
   }
 
-  getRooms(){
-    this.chatService.getChatRooms(this.user.id).subscribe({
-      next: (data) => {
-        this.chats = data;
-      },
-      error: (err) => {
-        console.log(err);
-      },
-      complete: () => {
-        console.warn(this.chats);
-        localStorage.setItem('chats', JSON.stringify(this.chats));
-        //this.subscribeToAllChatrooms();
-      }
+  async getRooms(): Promise<void> {
+    this.isLoading = true;
+    
+    return new Promise((resolve, reject) => {
+      this.chatService.getChatRooms(this.user.id).subscribe({
+        next: (data) => {
+          this.chats = data;
+          console.log('Loaded chats:', this.chats);
+        },
+        error: (err) => {
+          console.error('Error loading rooms:', err);
+          this.isLoading = false;
+          reject(err);
+        },
+        complete: () => {
+          localStorage.setItem('chats', JSON.stringify(this.chats));
+          
+          // Subscribe to all chatrooms if connected
+          if (this.webSocketService.isConnected()) {
+            this.subscribeToAllChatrooms();
+          } else {
+            console.warn('Not connected yet, waiting for connection...');
+          }
+          
+          this.isLoading = false;
+          resolve();
+        }
+      });
     });
   }
 
-  // navigation
-  navigateToChat(c :any) {
+  // Navigation
+  navigateToChat(c: any) {
     this.router.navigate(['/chats', c.id]);
     this.selectedChat = c;
+    this.activeChatroomId = c.id;
     localStorage.setItem("selectedChat", JSON.stringify(c));
+    
+    // Join the chatroom
+    if (this.webSocketService.isConnected() && this.user?.username) {
+      this.webSocketService.joinChatroom(c.id, this.user.username);
+    }
   }
 
   navigateToProfile() {
     this.router.navigate(['/profile']);
   }
 
-  // helper methods
+  // Helper methods
   getAvatarUrl(name: string): string {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
   }
@@ -213,24 +285,31 @@ export class HomeComponent implements OnInit{
     this.visible = true;
   }
 
-  initCredentials() {
-    //localStorage.clear();
-    let u = localStorage.getItem('user');
-    this.user = JSON.parse(u ?? '{}');
-    //console.warn(this.user);
-    //console.warn(localStorage.getItem('access_token'));
+  async initCredentials(): Promise<void> {
+    return new Promise((resolve) => {
+      let u = localStorage.getItem('user');
+      this.user = JSON.parse(u ?? '{}');
 
-    if(!this.user.id) {
-      console.log("eeee");
-      this.userService.getInfo().subscribe({
+      if(!this.user?.id) {
+        console.log('Fetching user info...');
+        this.userService.getInfo().subscribe({
           next: data => {
-            console.warn(data);
+            console.log('User info loaded:', data);
             localStorage.setItem('user', JSON.stringify(data));
+            this.user = data;
           },
-        complete: () => {
-          this.user = JSON.parse(localStorage.getItem('user') ?? '{}');
-          console.log(this.user);
-        }});
-    }
+          error: (err) => {
+            console.error('Error fetching user info:', err);
+            resolve();
+          },
+          complete: () => {
+            resolve();
+          }
+        });
+      } else {
+        console.log('User already loaded from localStorage:', this.user);
+        resolve();
+      }
+    });
   }
 }

@@ -78,6 +78,8 @@ export class WebSocketService {
   subscribeToChatroom(chatroomId: string): Observable<any> {
     // Return existing subject if already subscribed
     if (this.messageSubjects.has(chatroomId)) {
+      console.warn("already subscribed to room with id : ", chatroomId);
+      
       return this.messageSubjects.get(chatroomId)!.asObservable();
     }
 
