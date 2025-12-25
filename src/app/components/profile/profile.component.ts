@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { FloatLabelModule } from 'primeng/floatlabel';
@@ -27,9 +27,11 @@ import { TextareaModule } from 'primeng/textarea';
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })
-export class ProfileComponent implements OnInit{
+export class ProfileComponent implements OnInit {
 
   user: any;
+
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
     this.user = JSON.parse(localStorage.getItem('user') ?? '{}');
@@ -38,6 +40,10 @@ export class ProfileComponent implements OnInit{
 
   updateUser() {
     console.warn(this.user);
+  }
+
+  navigateToHome() {
+    this.router.navigate(['home']);
   }
 
   // helper methods

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, ViewChildren, QueryList } from '@angular/core';
 import { Chat } from '../../models/chat.model';
 import { ChatService } from '../../services/chat.service';
 import { InputTextModule } from 'primeng/inputtext';
@@ -35,7 +35,8 @@ import { Subscription } from 'rxjs';
 export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
-  
+  @ViewChildren('receivedMessage') receivedMessages!: QueryList<ElementRef>;
+
   chat!: Chat;
   chatroomId: string = '';
   message: string = '';
@@ -45,10 +46,11 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   link: string = 'http://localhost:4200/chats/';
   isLoading: boolean = false;
   isConnected: boolean = false;
-  
+
   user: any;
   private messageSubscription?: Subscription;
   private connectionSubscription?: Subscription;
+  private observer?: IntersectionObserver;
 
   constructor(
     private chatService: ChatService,
@@ -56,12 +58,12 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     private messageService: MessageService,
     private route: ActivatedRoute,
     private webSocketService: WebSocketService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Get user from localStorage
     this.user = JSON.parse(localStorage.getItem('user') ?? '{}');
-    
+
     // Get chatroom ID from route
     this.chatroomId = this.route.snapshot.paramMap.get('id') || '';
 
@@ -75,7 +77,7 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe(status => {
         console.log('[ChatDetails] WebSocket connection status changed:', status);
         this.isConnected = status;
-        
+
         if (status && !this.messageSubscription) {
           console.log('[ChatDetails] Connection established, subscribing to messages...');
           this.subscribeToMessages();
@@ -84,10 +86,10 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Fetch room details
     this.fetchRoom();
-    
+
     // Load messages from API
     this.loadMessages();
-    
+
     // Subscribe to WebSocket messages if already connected
     if (this.webSocketService.isConnected()) {
       console.log('[ChatDetails] WebSocket already connected, setting up subscription...');
@@ -103,36 +105,43 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.scrollToBottom();
+    this.setupIntersectionObserver();
+
+    // Subscribe to changes in the message list to observe new messages
+    this.receivedMessages.changes.subscribe(() => {
+      this.observeNewMessages();
+    });
   }
 
   ngOnDestroy(): void {
     // Unsubscribe from subscriptions but keep WebSocket connection alive
     this.messageSubscription?.unsubscribe();
     this.connectionSubscription?.unsubscribe();
-    
+    this.observer?.disconnect();
+
     // Don't unsubscribe from chatroom or disconnect - other components need it
   }
 
   // Load messages from API
   loadMessages(): void {
     this.isLoading = true;
-    
+
     this.chatService.getMessages(this.chatroomId).subscribe({
       next: (data: any) => {
         console.log('Loaded messages from API:', data);
         this.messages = data || [];
-        
+
         // Sort messages by timestamp (oldest first)
-        this.messages.sort((a, b) => 
+        this.messages.sort((a, b) =>
           new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         );
       },
       error: (err: any) => {
         console.error('Error loading messages:', err);
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Error', 
-          detail: 'Failed to load messages' 
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load messages'
         });
       },
       complete: () => {
@@ -160,7 +169,7 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     } else {
       console.log('[ChatDetails] Creating new subscription for chatroom:', this.chatroomId);
     }
-    
+
     this.messageSubscription = this.webSocketService
       .subscribeToChatroom(this.chatroomId)
       .subscribe({
@@ -184,32 +193,68 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Handle incoming WebSocket message
   handleIncomingMessage(message: any): void {
+    // 1. Check if this is a read receipt (often sent as { message: {...}, user: {...} })
+    if (message.message && message.user && (message.message.id || message.message.content)) {
+      const targetId = message.message.id;
+      const reader = message.user;
+
+      const index = this.messages.findIndex(m =>
+        (targetId && m.id === targetId) ||
+        (m.content === message.message.content &&
+          Math.abs(new Date(m.timestamp).getTime() - new Date(message.message.timestamp).getTime()) < 1000)
+      );
+
+      if (index !== -1) {
+        const msg = this.messages[index];
+        if (!msg.statuses) msg.statuses = [];
+        if (!msg.statuses.some((s: any) => (s.userId === reader.id || s.username === reader.username))) {
+          msg.statuses.push({ status: 'READ', userId: reader.id, username: reader.username });
+          this.messages[index] = { ...msg }; // Trigger change detection
+          console.log('[ChatDetails] Updated statuses for message via read receipt:', msg.id);
+        }
+        return;
+      }
+    }
+
+    // 2. Standard message handling logic
+    const incomingSenderName = typeof message.sender === 'string' ? message.sender : message.sender?.username;
+
     // Check if message already exists (avoid duplicates)
-    const exists = this.messages.some(m => 
-      m.id === message.id || 
-      (m.content === message.content && 
-       m.sender === message.sender && 
-       Math.abs(new Date(m.timestamp).getTime() - new Date(message.timestamp || new Date()).getTime()) < 1000)
+    const index = this.messages.findIndex(m =>
+      (m.id && message.id && m.id === message.id) ||
+      (m.content === message.content &&
+        (typeof m.sender === 'string' ? m.sender : m.sender?.username) === incomingSenderName &&
+        Math.abs(new Date(m.timestamp).getTime() - new Date(message.timestamp || new Date()).getTime()) < 1000)
     );
 
-    if (!exists) {
-      // Add timestamp if not present
-      if (!message.timestamp) {
-        message.timestamp = new Date();
-      }
+    if (index !== -1) {
+      console.log('[ChatDetails] Message already exists, updating properties:', message.id);
+      // Update existing message with new data (like statuses)
+      this.messages[index] = { ...this.messages[index], ...message };
+      return;
+    }
 
-      this.messages.push(message);
-      this.scrollToBottom();
+    // Only add if it's a chat message or join event, not if it's some other internal event
+    if (message.type === 'READ') {
+      return; // Already handled above if it was correctly identified
+    }
 
-      // Show notification for messages from others
-      if (message.type === 'CHAT' && message.sender !== this.user?.username) {
-        this.messageService.add({ 
-          severity: 'info', 
-          summary: message.sender, 
-          detail: message.content,
-          life: 3000
-        });
-      }
+    // Add timestamp if not present
+    if (!message.timestamp) {
+      message.timestamp = new Date();
+    }
+
+    this.messages.push(message);
+    this.scrollToBottom();
+
+    // Show notification for messages from others
+    if (message.type === 'CHAT' && incomingSenderName !== this.user?.username) {
+      this.messageService.add({
+        severity: 'info',
+        summary: incomingSenderName,
+        detail: message.content,
+        life: 3000
+      });
     }
   }
 
@@ -220,19 +265,19 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (!this.isConnected) {
-      this.messageService.add({ 
-        severity: 'warn', 
-        summary: 'Not Connected', 
-        detail: 'Please wait for connection...' 
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Not Connected',
+        detail: 'Please wait for connection...'
       });
       return;
     }
 
     if (!this.user?.username) {
-      this.messageService.add({ 
-        severity: 'error', 
-        summary: 'Error', 
-        detail: 'User not found' 
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'User not found'
       });
       return;
     }
@@ -266,20 +311,20 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error joining chat:', err);
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Error', 
-          detail: 'Failed to join chat' 
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to join chat'
         });
       },
       complete: () => {
         this.isMember = false;
-        this.messageService.add({ 
-          severity: 'success', 
-          summary: 'Welcome!', 
-          detail: `You have joined ${this.chat.name}` 
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Welcome!',
+          detail: `You have joined ${this.chat.name}`
         });
-        
+
         // Subscribe to messages after joining
         if (this.isConnected) {
           this.subscribeToMessages();
@@ -297,15 +342,15 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error fetching room:', err);
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Error', 
-          detail: 'Failed to load chat details' 
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load chat details'
         });
       },
       complete: () => {
         this.link = `http://localhost:4200/chats/${this.chat.id}`;
-        
+
         // Check if user is participant
         if (!this.chat.participants?.some(u => u.email === this.user.email)) {
           this.isMember = true;
@@ -353,6 +398,101 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     return senderName === this.user?.username;
   }
 
+  getMessageStatusIcon(m: any): string {
+    if (this.isMessageRead(m)) {
+      return 'pi pi-check-circle'; // Icon for Read
+    }
+    return 'pi pi-check'; // Icon for Sent/Unread
+  }
+
+  getMessageStatusColor(m: any): string {
+    if (this.isMessageRead(m)) {
+      return '#69f0ae'; // Light Green for read (visible on dark gradient)
+    }
+    return 'rgba(255, 255, 255, 0.7)'; // Semi-transparent white for sent
+  }
+
+  isMessageRead(m: any): boolean {
+    // Check various common status properties for robustness
+    if (m.status === 'READ' || m.read === true || m.isRead === true) {
+      return true;
+    }
+
+    if (!m.statuses || !Array.isArray(m.statuses)) {
+      return false;
+    }
+    return m.statuses.some((s: any) => s.status === 'READ');
+  }
+
+  private setupIntersectionObserver(): void {
+    if (!this.scrollContainer) return;
+
+    const options = {
+      root: this.scrollContainer.nativeElement,
+      rootMargin: '0px',
+      threshold: 0.5 // Trigger when 50% of the message is visible
+    };
+
+    this.observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          this.handleMessageRead(entry.target);
+        }
+      });
+    }, options);
+
+    // Initial observation
+    this.observeNewMessages();
+  }
+
+  private observeNewMessages(): void {
+    if (!this.observer) return;
+
+    this.receivedMessages?.forEach(msgRef => {
+      const id = msgRef.nativeElement.getAttribute('data-id');
+      const message = this.messages.find(m => m.id === id);
+
+      // Observe only if we found the message and it's not read
+      if (message && !this.isMessageRead(message)) {
+        this.observer!.observe(msgRef.nativeElement);
+      }
+    });
+  }
+
+  private handleMessageRead(element: Element): void {
+    const messageId = element.getAttribute('data-id');
+    if (!messageId) return;
+    const message = this.messages.find(m => m.id === messageId);
+
+    if (message && !this.isMessageRead(message)) {
+      console.log('[ChatDetails] Marking message as read:', messageId);
+
+      const x = {
+        message: message,
+        user: this.user
+      };
+
+      // Send read receipt
+      this.webSocketService.readMessage(this.chatroomId, x);
+
+      // Optimistically update local status
+      message.read = true;
+      message.status = 'READ';
+      message.isRead = true;
+
+      // Update statuses array for isMessageRead() to work locally
+      if (!message.statuses) {
+        message.statuses = [];
+      }
+      if (!message.statuses.some((s: any) => s.userId === this.user.id)) {
+        message.statuses.push({ status: 'READ', userId: this.user.id });
+      }
+
+      // Stop observing this element since it's now read
+      this.observer?.unobserve(element);
+    }
+  }
+
   scrollToBottom(): void {
     try {
       setTimeout(() => {
@@ -361,17 +501,17 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
           element.scrollTop = element.scrollHeight;
         }
       }, 100);
-    } catch(err) { 
+    } catch (err) {
       console.error('Error scrolling to bottom:', err);
     }
   }
 
   copyText(): void {
     this.clipboard.copy(this.link);
-    this.messageService.add({ 
-      severity: 'info', 
-      summary: 'Info', 
-      detail: 'Link copied to clipboard!' 
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Info',
+      detail: 'Link copied to clipboard!'
     });
   }
 

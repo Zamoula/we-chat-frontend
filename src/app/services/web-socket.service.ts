@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Client, Message, StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
@@ -12,11 +12,11 @@ export class WebSocketService {
 
   // Store messages by chatroom ID
   private messageSubjects: Map<string, Subject<any>> = new Map();
-  
+
   // Store active subscriptions
   private subscriptions: Map<string, StompSubscription> = new Map();
 
-  constructor() {}
+  constructor(private ngZone: NgZone) { }
 
   connect(serverUrl: string = 'http://localhost:3000/ws-chat'): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -35,23 +35,31 @@ export class WebSocketService {
         },
         onConnect: () => {
           console.log('Connected to WebSocket');
-          this.connectionStatus.next(true);
-          resolve();
+          this.ngZone.run(() => {
+            this.connectionStatus.next(true);
+            resolve();
+          });
         },
         onStompError: (frame) => {
           console.error('Broker reported error: ' + frame.headers['message']);
           console.error('Additional details: ' + frame.body);
-          this.connectionStatus.next(false);
-          reject(frame);
+          this.ngZone.run(() => {
+            this.connectionStatus.next(false);
+            reject(frame);
+          });
         },
         onWebSocketError: (error) => {
           console.error('WebSocket error:', error);
-          this.connectionStatus.next(false);
-          reject(error);
+          this.ngZone.run(() => {
+            this.connectionStatus.next(false);
+            reject(error);
+          });
         },
         onDisconnect: () => {
           console.log('Disconnected from WebSocket');
-          this.connectionStatus.next(false);
+          this.ngZone.run(() => {
+            this.connectionStatus.next(false);
+          });
         }
       });
 
@@ -64,13 +72,15 @@ export class WebSocketService {
       // Unsubscribe from all chatrooms
       this.subscriptions.forEach(sub => sub.unsubscribe());
       this.subscriptions.clear();
-      
+
       // Clear message subjects
       this.messageSubjects.forEach(subject => subject.complete());
       this.messageSubjects.clear();
-      
+
       this.stompClient.deactivate();
-      this.connectionStatus.next(false);
+      this.ngZone.run(() => {
+        this.connectionStatus.next(false);
+      });
       console.log('Disconnected from WebSocket');
     }
   }
@@ -79,7 +89,7 @@ export class WebSocketService {
     // Return existing subject if already subscribed
     if (this.messageSubjects.has(chatroomId)) {
       console.warn("already subscribed to room with id : ", chatroomId);
-      
+
       return this.messageSubjects.get(chatroomId)!.asObservable();
     }
 
@@ -95,12 +105,14 @@ export class WebSocketService {
     this.messageSubjects.set(chatroomId, subject);
 
     const destination = `/topic/chatroom/${chatroomId}`;
-    
+
     const subscription = this.stompClient.subscribe(
       destination,
       (message: Message) => {
-        const chatMessage: any = JSON.parse(message.body);
-        subject.next(chatMessage);
+        this.ngZone.run(() => {
+          const chatMessage: any = JSON.parse(message.body);
+          subject.next(chatMessage);
+        });
       }
     );
 
