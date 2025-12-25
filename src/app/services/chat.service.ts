@@ -24,6 +24,10 @@ export class ChatService {
     return this.http.get<any>(this.url + `/${roomId}/participants`);
   }
 
+  getMessages(roomId: any): Observable<any[]> {
+    return this.http.get<any[]>(this.url + `/${roomId}/messages`);
+  }
+
   participate(roomId: any, user: any): Observable<any> {
     return this.http.post<any>(this.url + `/${roomId}/participate`, user);
   }

@@ -112,7 +112,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.messageSubscriptions.forEach(sub => sub.unsubscribe());
     this.messageSubscriptions.clear();
     this.connectionSubscription?.unsubscribe();
-    this.webSocketService.disconnect();
+    // this.webSocketService.disconnect();
   }
 
   // Helper method to add delay
