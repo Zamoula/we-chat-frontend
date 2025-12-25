@@ -1,67 +1,61 @@
-<div class="container">
-    <div class="header">
-        <div class="info" (click)="visible = true">
-            <img [src]="getAvatarUrl(null)" alt="avatar">
-            <div>
-                <h2>{{chat?.name}}</h2>
-                <span>{{chat?.type}}</span>
-            </div>
+<div class="chat-container">
+    <div class="chat-header">
+        <div class="header-content">
+            <h1 class="header-title">{{chat?.name}}</h1>
+            <div class="header-subtitle">4 users online</div>
+        </div>
+        <div class="header-actions">
+            <button class="icon-button" (click)="visible = true">
+                <i class="pi pi-info-circle"></i>
+            </button>
         </div>
     </div>
-    <div #scrollContainer class="body">
-        @for (m of messages; track m.id) {
-            @if (verifSender(m.sender.username)) {
-                <div class="msg-container">
-                    <div class="msg-sended">
-                        <div class="msg-content">
-                            <span style="color: black;">You</span>
-                            <p class="content">{{m.content}}</p>
-                            <p class="time">{{formatTimestamp(m.timestamp)}}</p>
-                        </div>
-                    </div>
-                </div>
-            } @else {
-                <div class="msg-container">
-                    <div class="msg">
-                        <img [src]="getAvatarUrl(m.sender.username)">
-                        <div class="msg-content">
-                            <span>{{m.sender.username}}</span>
-                            <p class="content">{{m.content}}</p>
-                            <p class="time">{{formatTimestamp(m.timestamp)}}</p>
-                        </div>
-                    </div>
-                </div>
-            }
-        }
-    </div>
-    <div class="footer">
-        <input
-            pInputText
-            type="text"
-            [(ngModel)]="message"
-            placeholder="Type a message…"
-            class="message-input"
-            (keydown.enter)="sendMessage()"
-        />
 
-        <button
-            pButton
-            icon="pi pi-send"
-            class="send-btn"
-            (click)="sendMessage()"
-            [disabled]="!message.trim()"
-        ></button>
+    <div #scrollContainer class="chat-list">
+        <div class="body">
+            @for (m of messages; track m.id) {
+            @if (verifSender(m.sender.username)) {
+            <div class="msg-container">
+                <div class="msg-sended">
+                    <div class="msg-content">
+                        <span>You</span>
+                        <p class="content">{{m.content}}</p>
+                        <p class="time">{{formatTimestamp(m.timestamp)}}</p>
+                    </div>
+                </div>
+            </div>
+            } @else {
+            <div class="msg-container">
+                <div class="msg">
+                    <div class="msg-content">
+                        <span>{{m.sender.username}}</span>
+                        <p class="content">{{m.content}}</p>
+                        <p class="time">{{formatTimestamp(m.timestamp)}}</p>
+                    </div>
+                </div>
+            </div>
+            }
+            }
+        </div>
+    </div>
+
+    <div class="bottom-navigation">
+        <input pInputText type="text" [(ngModel)]="message" placeholder="Type a message…" class="message-input"
+            (keydown.enter)="sendMessage()" />
+
+        <button pButton icon="pi pi-send" class="send-btn" (click)="sendMessage()"
+            [disabled]="!message.trim()"></button>
     </div>
 </div>
 
-<p-toast position="bottom-right"/>
+<p-toast position="bottom-right" />
 <!--DIALOG-->
 <p-dialog header="Info" [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
     <span class="p-text-secondary block mb-8">Invite members</span>
     <br><br>
-    
+
     <div class="flex items-center gap-4 mb-8">
-        <input class="link" pInputText id="email" [disabled]="true" [(ngModel)]="link"/>
+        <input class="link" pInputText id="email" [disabled]="true" [(ngModel)]="link" />
         <i (click)="copyText()" style="margin-left: 10px;" class="pi pi-clone"></i>
     </div>
 </p-dialog>
