@@ -15,6 +15,7 @@ import { Chat } from '../../models/chat.model';
 import { UserService } from '../../services/user.service';
 import { Subscription } from 'rxjs';
 import { WebSocketService } from '../../services/web-socket.service';
+import { buildRoomPreviews, formatTimestamp, getRandomHexColor, setAvatar } from '../../utils/chat.utils';
 
 @Component({
   selector: 'app-home',
@@ -51,6 +52,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   chatroomMessages: Map<string, any[]> = new Map();
   chats: Chat[] = [];
+  previewChats: any[] = [];
   activeChatroomId: string | null = null;
 
   user: any;
@@ -67,6 +69,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
+    //localStorage.clear();
+    console.warn(localStorage.getItem('access_token'));
+    
     // Check authentication
     if(!localStorage.getItem("access_token")) {
       this.router.navigate(['']);
@@ -97,6 +102,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     // Load rooms
     await this.getRooms();
+
+    this.initPreviewChats();
   }
 
   ngOnDestroy(): void {
@@ -252,6 +259,21 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
+  initPreviewChats() {
+    this.previewChats = buildRoomPreviews(this.chats, this.user.id);
+    console.warn(this.previewChats);
+    this.previewChats.forEach(c => {
+      c.avatar = setAvatar(c.name);
+      c.color = getRandomHexColor();
+      
+      if(c.unreadCount > 1) {
+        c.hasUnread = true;
+      }
+
+      c.timestamp = formatTimestamp(c.timestamp);
+    });
+  }
+
   // Navigation
   navigateToChat(c: any) {
     console.log('[Home] Navigating to chat:', c.id);
@@ -275,10 +297,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   // Helper methods
-  getAvatarUrl(name: string): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
-  }
-
   showDialog() {
     this.visible = true;
   }

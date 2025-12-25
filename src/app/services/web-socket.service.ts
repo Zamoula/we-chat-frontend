@@ -155,6 +155,18 @@ export class WebSocketService {
     });
   }
 
+  readMessage(chatroomId: string, message: any): void {
+    if (!this.stompClient || !this.stompClient.connected) {
+      console.error('Cannot read message - not connected');
+      return;
+    }
+
+    this.stompClient.publish({
+      destination: `/app/chat/${chatroomId}/readMessage`,
+      body: JSON.stringify(message)
+    });
+  }
+
   getConnectionStatus(): Observable<boolean> {
     return this.connectionStatus.asObservable();
   }

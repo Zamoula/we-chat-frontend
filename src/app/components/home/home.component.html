@@ -1,41 +1,54 @@
-<div class="header">
-    <h2>WeChat</h2>
-    <div class="header-right">
-      <i class="pi pi-user" (click)="navigateToProfile()" style="font-size: 1.5rem"></i>
-      <i class="pi pi pi-cog" style="font-size: 1.5rem"></i>
+<div class="chat-container">
+  <div class="chat-header">
+    <div class="header-content">
+      <h1 class="header-title">Home</h1>
+      <div class="header-subtitle">Welcome {{user.username}}</div>
     </div>
-    
-</div>
-<p-button (click)="showDialog()" icon="pi pi-plus" [rounded]="true" [style]="{ width: '4rem', height: '4rem' }" class="fab-btn" variant="outlined" severity="success" />
+    <div class="header-actions">
+      <button class="icon-button">
+        <i class="pi pi-search"></i>
+      </button>
+      <button class="icon-button" (click)="showDialog()">
+        <i class="pi pi-plus"></i>
+      </button>
+    </div>
+  </div>
 
-<p-listbox
-  [options]="chats"
-  [(ngModel)]="selectedChat"
-  optionLabel="name"
-  styleClass="chat-list"
-  [filter]="true"
-  [listStyle]="{ maxHeight: '100vh' }"
->
-  <ng-template let-chat pTemplate="item">
-    <div class="chat-item" (click) = "navigateToChat(chat)">
-      <div class="chat-main">
-        <p-avatar
-        [image]="getAvatarUrl(chat.name)"
-        shape="circle"
-        size="large"
-        ></p-avatar>
-        <div class="chat-info">
-          <span class="chat-name">{{ chat.name }}</span>
-          <small class="chat-last">{{ chat.lastMessage }}</small>
+  <div class="chat-list">
+    @for (c of previewChats; track c.id) {
+      <div class="chat-item" (click) = "navigateToChat(c)">
+        <div class="avatar-wrapper">
+          <div class="avatar" [style.background-color]="c.color">
+            {{ c.avatar }}
+          </div>
+          @if (c.hasUnread) {
+            <span class="unread-indicator"></span>
+          }
         </div>
+        
+        <div class="chat-content">
+          <div class="chat-header-row">
+            <span class="chat-name">{{ c.name }}</span>
+            <span class="chat-time">{{ c.timestamp }}</span>
+          </div>
+          <div class="chat-preview">{{ c.lastchat || "Send your first msg" }}</div>
         </div>
-
-      <div class="chat-meta">
-        <small>{{ chat.updatedAt | date:'shortTime' }}</small>
       </div>
-    </div>
-  </ng-template>
-</p-listbox>
+    }
+  </div>
+
+  <div class="bottom-navigation">
+    <button class="nav-button active">
+      <i class="pi pi-comment"></i>
+    </button>
+    <button class="nav-button">
+      <i class="pi pi-cog"></i>
+    </button>
+    <button class="nav-button" (click)="navigateToProfile()">
+      <i class="pi pi-user"></i>
+    </button>
+  </div>
+</div>
 
 <!--DIALOG-->
 <p-dialog header="New Chat" [modal]="true" [(visible)]="visible" [style]="{ width: '25rem', height: '35vh' }">
