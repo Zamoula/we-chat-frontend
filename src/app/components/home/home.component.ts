@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { ListboxModule } from 'primeng/listbox';
@@ -15,7 +15,6 @@ import { Chat } from '../../models/chat.model';
 import { UserService } from '../../services/user.service';
 import { Subscription } from 'rxjs';
 import { WebSocketService } from '../../services/web-socket.service';
-import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-home',
@@ -32,8 +31,8 @@ import { HttpClient } from '@angular/common/http';
     FloatLabel,
     RadioButtonModule
   ],
+  // REMOVED WebSocketService from providers - it's already a singleton
   providers: [
-    WebSocketService,
     UserService,
     ChatService
   ],
@@ -68,7 +67,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    //localStorage.clear();
     // Check authentication
     if(!localStorage.getItem("access_token")) {
       this.router.navigate(['']);
@@ -91,29 +89,23 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
       });
 
-    // Connect to WebSocket and wait for connection
-    try {
-      console.log('Connecting to WebSocket...');
-      await this.webSocketService.connect();
-      console.log('WebSocket connected successfully');
-      
-      // Wait a moment for connection to stabilize
-      await this.delay(300);
-      
-      // Now load and subscribe to rooms
-      await this.getRooms();
-      
-    } catch (error) {
-      console.error('Failed to connect to WebSocket:', error);
+    // Check if already connected (from app initializer)
+    if (this.webSocketService.isConnected()) {
+      console.log('WebSocket already connected');
+      this.isConnected = true;
     }
+
+    // Load rooms
+    await this.getRooms();
   }
 
   ngOnDestroy(): void {
     // Clean up subscriptions
-    //this.messageSubscriptions.forEach(sub => sub.unsubscribe());
-    //this.messageSubscriptions.clear();
-    //this.connectionSubscription?.unsubscribe();
-    // this.webSocketService.disconnect();
+    this.messageSubscriptions.forEach(sub => sub.unsubscribe());
+    this.messageSubscriptions.clear();
+    this.connectionSubscription?.unsubscribe();
+    
+    // Don't disconnect WebSocket - other components might need it
   }
 
   // Helper method to add delay
@@ -250,7 +242,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           if (this.webSocketService.isConnected()) {
             this.subscribeToAllChatrooms();
           } else {
-            console.warn('Not connected yet, waiting for connection...');
+            console.warn('Not connected yet, will subscribe when connected');
           }
           
           this.isLoading = false;
@@ -262,13 +254,18 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // Navigation
   navigateToChat(c: any) {
+    console.log('[Home] Navigating to chat:', c.id);
+    console.log('[Home] WebSocket connected:', this.webSocketService.isConnected());
+    console.log('[Home] Is subscribed to chatroom:', this.webSocketService.isSubscribedToChatroom(c.id));
+    
     this.router.navigate(['/chats', c.id]);
     this.selectedChat = c;
     this.activeChatroomId = c.id;
     localStorage.setItem("selectedChat", JSON.stringify(c));
     
-    // Join the chatroom
+    // Join the chatroom (send JOIN message)
     if (this.webSocketService.isConnected() && this.user?.username) {
+      console.log('[Home] Sending JOIN message for chatroom:', c.id);
       this.webSocketService.joinChatroom(c.id, this.user.username);
     }
   }

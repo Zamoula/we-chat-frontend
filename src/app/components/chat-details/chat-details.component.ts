@@ -27,7 +27,8 @@ import { Subscription } from 'rxjs';
     ToastModule,
     Toast
   ],
-  providers: [MessageService, WebSocketService, ChatService],
+  // REMOVED WebSocketService from providers - it's already a singleton
+  providers: [MessageService, ChatService],
   templateUrl: './chat-details.component.html',
   styleUrl: './chat-details.component.scss'
 })
@@ -64,20 +65,23 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     // Get chatroom ID from route
     this.chatroomId = this.route.snapshot.paramMap.get('id') || '';
 
-    console.warn(this.webSocketService.isSubscribedToChatroom(this.chatroomId));
+    console.log('[ChatDetails] Component initialized for chatroom:', this.chatroomId);
+    console.log('[ChatDetails] Is subscribed to chatroom:', this.webSocketService.isSubscribedToChatroom(this.chatroomId));
+    console.log('[ChatDetails] WebSocket connected:', this.webSocketService.isConnected());
 
-    // Subscribe to connection status
+    // Subscribe to connection status changes
     this.connectionSubscription = this.webSocketService
       .getConnectionStatus()
       .subscribe(status => {
-        console.log('WebSocket connection status:', status);
+        console.log('[ChatDetails] WebSocket connection status changed:', status);
         this.isConnected = status;
         
-        if (status) {
+        if (status && !this.messageSubscription) {
+          console.log('[ChatDetails] Connection established, subscribing to messages...');
           this.subscribeToMessages();
         }
       });
-    
+
     // Fetch room details
     this.fetchRoom();
     
@@ -86,8 +90,14 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     
     // Subscribe to WebSocket messages if already connected
     if (this.webSocketService.isConnected()) {
+      console.log('[ChatDetails] WebSocket already connected, setting up subscription...');
       this.isConnected = true;
-      this.subscribeToMessages();
+      // Small delay to ensure everything is initialized
+      setTimeout(() => {
+        this.subscribeToMessages();
+      }, 100);
+    } else {
+      console.warn('[ChatDetails] WebSocket not connected yet, waiting for connection...');
     }
   }
 
@@ -96,11 +106,11 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Unsubscribe from message subscription
+    // Unsubscribe from subscriptions but keep WebSocket connection alive
     this.messageSubscription?.unsubscribe();
     this.connectionSubscription?.unsubscribe();
     
-    // Don't disconnect WebSocket - other components might need it
+    // Don't unsubscribe from chatroom or disconnect - other components need it
   }
 
   // Load messages from API
@@ -135,33 +145,39 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   // Subscribe to WebSocket messages
   subscribeToMessages(): void {
     if (this.messageSubscription) {
-      console.log('Already subscribed to messages');
+      console.log('[ChatDetails] Already subscribed to messages');
       return;
     }
 
     if (!this.webSocketService.isConnected()) {
-      console.warn('WebSocket not connected, cannot subscribe');
+      console.warn('[ChatDetails] WebSocket not connected, cannot subscribe');
       return;
     }
 
-    console.log('Subscribing to chatroom:', this.chatroomId);
+    // Check if already subscribed from home component
+    if (this.webSocketService.isSubscribedToChatroom(this.chatroomId)) {
+      console.log('[ChatDetails] Already subscribed to this chatroom from another component, reusing subscription');
+    } else {
+      console.log('[ChatDetails] Creating new subscription for chatroom:', this.chatroomId);
+    }
     
     this.messageSubscription = this.webSocketService
       .subscribeToChatroom(this.chatroomId)
       .subscribe({
         next: (message) => {
           if (message) {
-            console.log('Received WebSocket message:', message);
+            console.log('[ChatDetails] Received WebSocket message:', message);
             this.handleIncomingMessage(message);
           }
         },
         error: (error) => {
-          console.error('Error in message subscription:', error);
+          console.error('[ChatDetails] Error in message subscription:', error);
         }
       });
 
-    // Join the chatroom
+    // Join the chatroom (send JOIN message to server)
     if (this.user?.username) {
+      console.log('[ChatDetails] Sending JOIN message for user:', this.user.username);
       this.webSocketService.joinChatroom(this.chatroomId, this.user.username);
     }
   }
@@ -209,7 +225,6 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
         summary: 'Not Connected', 
         detail: 'Please wait for connection...' 
       });
-      this.webSocketService.connect();
       return;
     }
 
@@ -229,22 +244,8 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       messageType: "TEXT"
     };
 
-    console.log('Sending message:', messageObj);
-
     // Send via WebSocket
     this.webSocketService.sendMessage(this.chatroomId, messageObj);
-
-    // Optionally: Add to local messages immediately (optimistic update)
-    // The message will come back via WebSocket subscription
-    // Uncomment if you want instant feedback:
-    /*
-    this.messages.push({
-      ...messageObj,
-      sender: { username: this.user.username },
-      isLocal: true // Mark as local to avoid duplicate from WebSocket
-    });
-    this.scrollToBottom();
-    */
 
     // Clear input
     this.message = '';
