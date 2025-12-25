@@ -149,6 +149,9 @@ export class WebSocketService {
       return;
     }
 
+    console.warn("room ID :", chatroomId);
+    console.warn(message);
+
     this.stompClient.publish({
       destination: `/app/chat/${chatroomId}/sendMessage`,
       body: JSON.stringify(message)

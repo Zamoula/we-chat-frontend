@@ -68,6 +68,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
+    //localStorage.clear();
     // Check authentication
     if(!localStorage.getItem("access_token")) {
       this.router.navigate(['']);
@@ -109,9 +110,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     // Clean up subscriptions
-    this.messageSubscriptions.forEach(sub => sub.unsubscribe());
-    this.messageSubscriptions.clear();
-    this.connectionSubscription?.unsubscribe();
+    //this.messageSubscriptions.forEach(sub => sub.unsubscribe());
+    //this.messageSubscriptions.clear();
+    //this.connectionSubscription?.unsubscribe();
     // this.webSocketService.disconnect();
   }
 

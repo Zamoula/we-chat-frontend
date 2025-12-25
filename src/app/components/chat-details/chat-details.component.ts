@@ -63,7 +63,9 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     
     // Get chatroom ID from route
     this.chatroomId = this.route.snapshot.paramMap.get('id') || '';
-    
+
+    console.warn(this.webSocketService.isSubscribedToChatroom(this.chatroomId));
+
     // Subscribe to connection status
     this.connectionSubscription = this.webSocketService
       .getConnectionStatus()
@@ -207,6 +209,7 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
         summary: 'Not Connected', 
         detail: 'Please wait for connection...' 
       });
+      this.webSocketService.connect();
       return;
     }
 
@@ -221,10 +224,9 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Create message object
     const messageObj = {
-      sender: this.user.username,
+      senderId: this.user.id,
       content: this.message.trim(),
-      type: 'CHAT',
-      timestamp: new Date().toISOString()
+      messageType: "TEXT"
     };
 
     console.log('Sending message:', messageObj);
