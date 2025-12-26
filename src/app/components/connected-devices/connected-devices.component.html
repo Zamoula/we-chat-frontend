@@ -1,0 +1,67 @@
+<div class="chat-container">
+    <div class="background-glow"></div>
+    <div class="chat-header">
+        <div class="header-content">
+            <button class="back-button" (click)="goBack()">
+                <i class="pi pi-chevron-left"></i>
+            </button>
+            <h1 class="header-title">Connected Sessions</h1>
+        </div>
+    </div>
+
+    <div class="devices-content">
+        <div class="info-card">
+            <i class="pi pi-shield"></i>
+            <div class="info-text">
+                <h3>Your Devices</h3>
+                <p>You're logged in to your account on these devices. You can log out of any session individually.</p>
+            </div>
+        </div>
+
+        @if (!loading) {
+        <div class="devices-list">
+            @for (device of devices; track device.id || device._id) {
+            <div class="device-item">
+                <div class="device-icon">
+                    <i [class]="getDeviceIcon(device.type || device.os || 'desktop')"></i>
+                </div>
+                <div class="device-info">
+                    <div class="device-name">
+                        <span class="device-id">ID: {{ device.id || device._id }}</span>
+                        @if (device.isCurrent) {
+                        <span class="current-tag">Current</span>
+                        }
+                    </div>
+                    <div class="device-name main">
+                        {{ device.deviceName || device.browser + ' on ' + device.os }}
+                    </div>
+                    <div class="device-meta">
+                        <span class="ip-address">IP Address: {{ device.ipAddress || 'Unknown' }}</span> •
+                        @if (device.isCurrent) {
+                        <span class="status-active">Active now</span>
+                        } @else {
+                        <span>Last seen: {{ (device.lastSeenAt || device.lastActive) | date:'medium' }}</span>
+                        }
+                    </div>
+                </div>
+                @if (!device.isCurrent) {
+                <button class="terminate-button" (click)="terminateSession(device.id || device._id)"
+                    title="Terminate session">
+                    <i class="pi pi-sign-out"></i>
+                </button>
+                }
+            </div>
+            } @empty {
+            <div class="empty-state">
+                <i class="pi pi-info-circle"></i>
+                <p>No other connected devices found.</p>
+            </div>
+            }
+        </div>
+        } @else {
+        <div class="loading-spinner">
+            <i class="pi pi-spin pi-spinner"></i>
+        </div>
+        }
+    </div>
+</div>

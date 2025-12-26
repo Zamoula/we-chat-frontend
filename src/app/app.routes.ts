@@ -7,6 +7,8 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { SigninComponent } from './components/signin/signin.component';
 import { SignupComponent } from './components/signup/signup.component';
+import { ConnectedDevicesComponent } from './components/connected-devices/connected-devices.component';
+import { ActiveSessionsComponent } from './components/active-sessions/active-sessions.component';
 
 export const routes: Routes = [
     { path: "", component: LandingComponent },
@@ -15,5 +17,7 @@ export const routes: Routes = [
     { path: "home", component: HomeComponent },
     { path: "chats/:id", component: ChatDetailsComponent },
     { path: "profile", component: ProfileComponent },
-    { path: "settings", component: SettingsComponent }
+    { path: "settings", component: SettingsComponent },
+    { path: "connected-devices", component: ConnectedDevicesComponent },
+    { path: "active-sessions", component: ActiveSessionsComponent }
 ];

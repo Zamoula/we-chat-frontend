@@ -10,6 +10,8 @@ import { PasswordModule } from 'primeng/password';
 import { DividerModule } from 'primeng/divider';
 import { DialogModule } from 'primeng/dialog';
 import { AuthService } from '../../services/auth.service';
+import { DeviceService } from '../../services/device.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'app-signup',
@@ -36,14 +38,17 @@ export class SignupComponent implements OnInit{
   user: any = {
     username: '',
     email: '',
-    password: ''
+    password: '',
+    deviceName: '',
+    deviceId: ''
   }
   visible: boolean = false;
   errorMessage: boolean = false;
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private deviceService: DeviceService
   ) {}
 
   ngOnInit(): void {
@@ -53,6 +58,8 @@ export class SignupComponent implements OnInit{
   }
 
   register(user: any) {
+    user.deviceName = this.deviceService.getDeviceInfo().userAgent;
+    user.deviceId = uuidv4();
     this.authService.register(user).subscribe({
       next: data => {
         this.showDialog();

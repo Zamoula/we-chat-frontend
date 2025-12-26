@@ -8,6 +8,8 @@ import { FloatLabelModule } from 'primeng/floatlabel';
 import { PasswordModule } from 'primeng/password';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { DeviceService } from '../../services/device.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'app-signin',
@@ -32,10 +34,14 @@ export class SigninComponent implements OnInit{
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private deviceService: DeviceService
   ) {}
 
   ngOnInit(): void {
+    //localStorage.clear();
+    console.log(this.deviceService.getDeviceInfo());
+    
     if(localStorage.getItem('access_token') && localStorage.getItem('user')) {
       this.router.navigate(['/home']);
     }
@@ -50,7 +56,9 @@ export class SigninComponent implements OnInit{
   login() {
     const user = {
       email: this.email,
-      password: this.password
+      password: this.password,
+      deviceName: this.deviceService.getDeviceInfo().userAgent,
+      deviceId: uuidv4()
     };
     this.authService.login(user).subscribe({
       next: data => {

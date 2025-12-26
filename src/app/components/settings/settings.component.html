@@ -61,23 +61,54 @@
                 </div>
                 <i class="pi pi-chevron-right"></i>
             </div>
-            <div class="settings-item">
-                <div class="item-info">
-                    <i class="pi pi-shield"></i>
-                    <span>Privacy & Security</span>
+            <div class="settings-section">
+                <h2 class="section-title">Privacy & Security</h2>
+                <div class="settings-item">
+                    <div class="item-info">
+                        <i class="pi pi-key"></i>
+                        <span>Change Password</span>
+                    </div>
+                    <i class="pi pi-chevron-right"></i>
                 </div>
-                <i class="pi pi-chevron-right"></i>
+                <div class="settings-item" (click)="navigateToActiveSessions()">
+                    <div class="item-info">
+                        <i class="pi pi-history"></i>
+                        <span>Active Sessions</span>
+                    </div>
+                    <div class="item-action">
+                        <span class="status-tag">{{ activeSessionsCount }} active</span>
+                        <i class="pi pi-chevron-right ml-2" style="margin-left: 0.5rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+                <div class="settings-item" (click)="navigateToConnectedDevices()">
+                    <div class="item-info">
+                        <i class="pi pi-desktop"></i>
+                        <span>Connected Devices</span>
+                    </div>
+                    <i class="pi pi-chevron-right"></i>
+                </div>
+                <div class="settings-item">
+                    <div class="item-info">
+                        <i class="pi pi-shield"></i>
+                        <span>Two-Factor Authentication</span>
+                    </div>
+                    <div class="item-action">
+                        <span class="status-tag off">Off</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <p-toast />
+                <div class="settings-item logout" (click)="logout()">
+                    <div class="item-info">
+                        <i class="pi pi-power-off"></i>
+                        <span>Logout</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="settings-section">
-            <div class="settings-item logout" (click)="logout()">
-                <div class="item-info">
-                    <i class="pi pi-power-off"></i>
-                    <span>Logout</span>
-                </div>
-            </div>
-        </div>
     </div>
 
     <div class="bottom-navigation">
@@ -91,4 +122,3 @@
             <i class="pi pi-user"></i>
         </button>
     </div>
-</div>

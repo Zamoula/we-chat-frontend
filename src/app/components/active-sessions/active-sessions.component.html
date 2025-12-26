@@ -1,0 +1,63 @@
+<div class="chat-container">
+    <div class="background-glow"></div>
+    <div class="chat-header">
+        <div class="header-content">
+            <button class="back-button" (click)="goBack()">
+                <i class="pi pi-chevron-left"></i>
+            </button>
+            <h1 class="header-title">Active Sessions</h1>
+        </div>
+    </div>
+
+    <div class="sessions-content">
+        <div class="info-card">
+            <i class="pi pi-info-circle"></i>
+            <p>This is a list of devices that have logged into your account. Revoke any sessions that you do not
+                recognize.</p>
+        </div>
+
+        <div class="sessions-list">
+            @for (session of sessions; track session.id) {
+            <div class="session-item" [class.current]="session.isCurrent">
+                <div class="session-icon">
+                    <i [class]="getDeviceIcon(session.os)"></i>
+                </div>
+                <div class="session-info">
+                    <div class="device-name">
+                        {{ session.device }}
+                        @if (session.isCurrent) {
+                        <span class="current-tag">This Device</span>
+                        }
+                    </div>
+                    <div class="session-details">
+                        {{ session.browser }} • {{ session.os }}
+                    </div>
+                    <div class="session-meta">
+                        {{ session.ipAddress }} • {{ session.lastActive }}
+                    </div>
+                </div>
+                @if (!session.isCurrent) {
+                <div class="session-actions">
+                    <button class="terminate-btn" (click)="terminateSession(session.id)">
+                        Terminate
+                    </button>
+                </div>
+                }
+            </div>
+            } @empty {
+            <div class="empty-sessions">
+                <i class="pi pi-shield"></i>
+                <p>No active sessions found.</p>
+            </div>
+            }
+        </div>
+
+        @if (sessions.length > 1) {
+        <div class="actions-section">
+            <button class="terminate-all-btn" (click)="terminateAllOtherSessions()">
+                Terminate All Other Sessions
+            </button>
+        </div>
+        }
+    </div>
+</div>
