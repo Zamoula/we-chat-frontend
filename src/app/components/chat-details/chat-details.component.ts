@@ -245,17 +245,6 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.messages.push(message);
-    this.scrollToBottom();
-
-    // Show notification for messages from others
-    if (message.type === 'CHAT' && incomingSenderName !== this.user?.username) {
-      this.messageService.add({
-        severity: 'info',
-        summary: incomingSenderName,
-        detail: message.content,
-        life: 3000
-      });
-    }
   }
 
   // Send message via WebSocket
@@ -294,6 +283,8 @@ export class ChatDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Clear input
     this.message = '';
+
+    this.scrollToBottom();
   }
 
   // Participate in chat
