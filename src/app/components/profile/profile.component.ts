@@ -46,6 +46,10 @@ export class ProfileComponent implements OnInit {
     this.router.navigate(['home']);
   }
 
+  navigateToSettings() {
+    this.router.navigate(['settings']);
+  }
+
   // helper methods
   getAvatarUrl(name: string): string {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=000000&color=007F73`;

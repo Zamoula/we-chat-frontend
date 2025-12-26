@@ -66,14 +66,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     private chatService: ChatService,
     private userService: UserService,
     private webSocketService: WebSocketService,
-  ) {}
+  ) { }
 
   async ngOnInit(): Promise<void> {
     //localStorage.clear();
     console.warn(localStorage.getItem('access_token'));
-    
+
     // Check authentication
-    if(!localStorage.getItem("access_token")) {
+    if (!localStorage.getItem("access_token")) {
       this.router.navigate(['']);
       return;
     }
@@ -111,7 +111,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.messageSubscriptions.forEach(sub => sub.unsubscribe());
     this.messageSubscriptions.clear();
     this.connectionSubscription?.unsubscribe();
-    
+
     // Don't disconnect WebSocket - other components might need it
   }
 
@@ -167,14 +167,14 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   resubscribeToAllChatrooms(): void {
     console.log('Resubscribing to all chatrooms...');
-    
+
     // Clear existing subscriptions
     this.messageSubscriptions.forEach(sub => sub.unsubscribe());
     this.messageSubscriptions.clear();
-    
+
     // Resubscribe to all chatrooms
     this.subscribeToAllChatrooms();
-    
+
     // Rejoin active chatroom if username is set
     if (this.activeChatroomId && this.user?.username) {
       this.webSocketService.joinChatroom(this.activeChatroomId, this.user.username);
@@ -188,10 +188,10 @@ export class HomeComponent implements OnInit, OnDestroy {
       messages = [];
       this.chatroomMessages.set(chatroomId, messages);
     }
-    
+
     // Add message
     messages.push(message);
-    
+
     // Optional: Limit message history per chatroom
     if (messages.length > 100) {
       messages.shift();
@@ -205,13 +205,13 @@ export class HomeComponent implements OnInit, OnDestroy {
       type: this.newRoom_type,
       participants: [this.user.id]
     };
-    
+
     this.chatService.create(room).subscribe({
       next: data => {
         console.log('Room created:', data);
         this.chats.push(data);
         localStorage.setItem('chats', JSON.stringify(this.chats));
-        
+
         // Subscribe to the new room if connected
         if (this.webSocketService.isConnected()) {
           this.subscribeToChatroom(data.id);
@@ -230,7 +230,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   async getRooms(): Promise<void> {
     this.isLoading = true;
-    
+
     return new Promise((resolve, reject) => {
       this.chatService.getChatRooms(this.user.id).subscribe({
         next: (data) => {
@@ -244,14 +244,14 @@ export class HomeComponent implements OnInit, OnDestroy {
         },
         complete: () => {
           localStorage.setItem('chats', JSON.stringify(this.chats));
-          
+
           // Subscribe to all chatrooms if connected
           if (this.webSocketService.isConnected()) {
             this.subscribeToAllChatrooms();
           } else {
             console.warn('Not connected yet, will subscribe when connected');
           }
-          
+
           this.isLoading = false;
           resolve();
         }
@@ -265,8 +265,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.previewChats.forEach(c => {
       c.avatar = setAvatar(c.name);
       c.color = getRandomHexColor();
-      
-      if(c.unreadCount > 1) {
+
+      if (c.unreadCount > 1) {
         c.hasUnread = true;
       }
 
@@ -279,12 +279,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     console.log('[Home] Navigating to chat:', c.id);
     console.log('[Home] WebSocket connected:', this.webSocketService.isConnected());
     console.log('[Home] Is subscribed to chatroom:', this.webSocketService.isSubscribedToChatroom(c.id));
-    
+
     this.router.navigate(['/chats', c.id]);
     this.selectedChat = c;
     this.activeChatroomId = c.id;
     localStorage.setItem("selectedChat", JSON.stringify(c));
-    
+
     // Join the chatroom (send JOIN message)
     if (this.webSocketService.isConnected() && this.user?.username) {
       console.log('[Home] Sending JOIN message for chatroom:', c.id);
@@ -294,6 +294,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   navigateToProfile() {
     this.router.navigate(['/profile']);
+  }
+
+  navigateToSettings() {
+    this.router.navigate(['/settings']);
   }
 
   // Helper methods
@@ -306,7 +310,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       let u = localStorage.getItem('user');
       this.user = JSON.parse(u ?? '{}');
 
-      if(!this.user?.id) {
+      if (!this.user?.id) {
         console.log('Fetching user info...');
         this.userService.getInfo().subscribe({
           next: data => {
