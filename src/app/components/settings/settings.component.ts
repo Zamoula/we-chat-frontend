@@ -27,8 +27,7 @@ export class SettingsComponent implements OnInit {
     private router: Router,
     private themeService: ThemeService,
     private deviceService: DeviceService,
-    private sessionService: SessionService,
-    private messageService: MessageService
+    private sessionService: SessionService
   ) {
     this.currentTheme = this.themeService.getStoredTheme();
     this.isDarkMode = this.themeService.isDarkMode();
@@ -77,8 +76,6 @@ export class SettingsComponent implements OnInit {
         localStorage.removeItem('access_token');
         localStorage.removeItem('user');
         this.router.navigate(['/']);
-
-        this.messageService.add({ severity: 'info', summary: 'Info', detail: 'You have been logged out', life: 3000 });
       }
     });
   }
