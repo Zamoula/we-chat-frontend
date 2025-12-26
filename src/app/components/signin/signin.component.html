@@ -1,19 +1,41 @@
-<div class="container">
-  <p-card header="Login">
-    <p class="m-0">
-      <a [routerLink]="['/signup']">Don't have an account ? <strong>Tap Here</strong></a>
-      <br><br><br>
-      <p-floatlabel>
-        <input pInputText id="email" [(ngModel)]="email" autocomplete="off" />
-        <label for="email">Email</label>
-      </p-floatlabel>
-      <br><br>
-      <p-floatLabel>
-        <p-password [(ngModel)]="password" inputId="password" [feedback]="false" [toggleMask]="true" />
-        <label for="password">Password</label>
-      </p-floatLabel>
-      <br>
-      <p-button label="Sign In" [disabled]="!checkForm()" (click)="login()"/>
-    </p>
-  </p-card>
+<div class="auth-container">
+  <div class="auth-box">
+    <div class="auth-header">
+      <div class="logo">
+        <span class="logo-icon">W</span>
+        <span class="logo-text">WeChat</span>
+      </div>
+      <h2>Welcome Back</h2>
+      <p>Please enter your details to sign in.</p>
+    </div>
+
+    <form class="auth-form" (ngSubmit)="login()">
+      <div class="form-group">
+        <p-floatlabel>
+          <input pInputText id="email" [(ngModel)]="email" name="email" autocomplete="off" class="w-full" />
+          <label for="email">Email address</label>
+        </p-floatlabel>
+      </div>
+
+      <div class="form-group">
+        <p-floatLabel>
+          <p-password [(ngModel)]="password" name="password" inputId="password" [feedback]="false" [toggleMask]="true"
+            styleClass="w-full" />
+          <label for="password">Password</label>
+        </p-floatLabel>
+      </div>
+
+      <div class="form-actions">
+        <p-button label="Sign In" [disabled]="!checkForm()" type="submit" class="w-full auth-btn" />
+      </div>
+    </form>
+
+    <div class="auth-footer">
+      <p>Don't have an account? <a [routerLink]="['/signup']">Sign up for free</a></p>
+    </div>
+  </div>
+
+  <div class="back-link">
+    <a [routerLink]="['/']"><i class="pi pi-arrow-left"></i> Back to Home</a>
+  </div>
 </div>

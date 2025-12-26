@@ -1,42 +1,78 @@
-<div class="container">
-  <p-card header="Register">
-    <p class="m-0">
-      <a [routerLink]="['/signin']">← <strong>Back</strong></a>
-      <br><br><br>
-      <p-floatlabel>
-        <input pInputText id="username" [(ngModel)]="user.username" autocomplete="off" />
-        <label for="username">Username</label>
-      </p-floatlabel>
-      <br><br>
-      <p-floatlabel>
-        <input pInputText id="email" [(ngModel)]="user.email" autocomplete="off" />
-        <label for="email">Email</label>
-      </p-floatlabel>
-      <br><br>
-      <p-floatLabel>
-        <p-password [(ngModel)]="user.password" inputId="password" [feedback]="false" [toggleMask]="true" />
-        <label for="password">Password</label>
-      </p-floatLabel>
-      <br><br>
-      <p-floatLabel>
-        <p-password [(ngModel)]="confirmPassword" inputId="confirmPassword" [feedback]="false" [toggleMask]="true" />
-        <label for="confirmPassword">Confirm Password</label>
-      </p-floatLabel>
-      <br><br>
-      <p-button [style]="{width: '100%'}" label="Sign In" (click)="register(user)" [disabled]="!checkForm()"/>
-    </p>
-  </p-card>
+<div class="auth-container">
+  <div class="auth-box">
+    <div class="auth-header">
+      <div class="logo">
+        <span class="logo-icon">W</span>
+        <span class="logo-text">WeChat</span>
+      </div>
+      <h2>Create Account</h2>
+      <p>Join our community.</p>
+    </div>
+
+    <form class="auth-form" (ngSubmit)="register(user)">
+      <div class="form-group">
+        <p-floatlabel>
+          <input pInputText id="username" [(ngModel)]="user.username" name="username" autocomplete="off"
+            class="w-full" />
+          <label for="username">Username</label>
+        </p-floatlabel>
+      </div>
+
+      <div class="form-group">
+        <p-floatlabel>
+          <input pInputText id="email" [(ngModel)]="user.email" name="email" autocomplete="off" class="w-full" />
+          <label for="email">Email address</label>
+        </p-floatlabel>
+      </div>
+
+      <div class="form-group">
+        <p-floatLabel>
+          <p-password [(ngModel)]="user.password" name="password" inputId="password" [feedback]="false"
+            [toggleMask]="true" styleClass="w-full" />
+          <label for="password">Password</label>
+        </p-floatLabel>
+      </div>
+
+      <div class="form-group">
+        <p-floatLabel>
+          <p-password [(ngModel)]="confirmPassword" name="confirmPassword" inputId="confirmPassword" [feedback]="false"
+            [toggleMask]="true" styleClass="w-full" />
+          <label for="confirmPassword">Confirm Password</label>
+        </p-floatLabel>
+      </div>
+
+      <div class="form-actions">
+        <p-button label="Sign Up" [disabled]="!checkForm()" type="submit" class="w-full auth-btn" />
+      </div>
+    </form>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a [routerLink]="['/signin']">Sign in here</a></p>
+    </div>
+  </div>
+
+  <div class="back-link">
+    <a [routerLink]="['/']"><i class="pi pi-arrow-left"></i> Back to Home</a>
+  </div>
 </div>
 
-<!--DIALOG-->
-  <p-dialog [modal]="true" [(visible)]="errorMessage" [style]="{ width: '25rem' }">
-    <p class="dialog-msg">An error Occurred, please try again later.</p>
-  </p-dialog>
+<!--DIALOGS-->
+<p-dialog [modal]="true" [(visible)]="errorMessage" [style]="{ width: '25rem' }" [draggable]="false" [resizable]="false"
+  header="Error">
+  <div class="dialog-content">
+    <i class="pi pi-exclamation-circle error-icon"></i>
+    <p class="dialog-msg">An error occurred, please try again later.</p>
+  </div>
+</p-dialog>
 
-  <p-dialog [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
-    <p class="dialog-msg">A verification code will be sent to your email address within 5 minutes. Please check your inbox and spam folder.</p>
-    <br><br>
-    <input (input)="onType($event)" pInputText id="verificationCode" class="flex-auto" autocomplete="off" style="width: 100%;"/>
-    <br><br>
-    <p class="dialog-msg">Fill in the input field with the verification code sent to your email to proceed with registration.</p>
-  </p-dialog>
+<p-dialog [modal]="true" [(visible)]="visible" [style]="{ width: '28rem' }" [draggable]="false" [resizable]="false"
+  header="Verify Email">
+  <div class="dialog-content">
+    <p class="dialog-info">A verification code will be sent to your email address. Please check your inbox.</p>
+    <div class="verify-input-group">
+      <input (input)="onType($event)" pInputText id="verificationCode" placeholder="Enter Verfication Code"
+        autocomplete="off" class="w-full" />
+    </div>
+    <p class="dialog-sub">This code expires in 5 minutes.</p>
+  </div>
+</p-dialog>

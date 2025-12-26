@@ -1,1 +1,77 @@
-<p-button label="Get started" (click)="navigateToSignIn()"/>
+<div class="landing-container">
+    <nav class="navbar">
+        <div class="logo">
+            <span class="logo-icon">W</span>
+            <span class="logo-text">WeChat</span>
+        </div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#about">About</a>
+            <p-button label="Sign In" [text]="true" (click)="navigateToSignIn()" class="signin-btn" />
+        </div>
+    </nav>
+
+    <main class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Connect Beyond <span>Boundaries</span></h1>
+            <p class="hero-subtitle">
+                Experience the next generation of real-time messaging. Secure, fast, and
+                designed for the modern world.
+            </p>
+            <div class="hero-actions">
+                <p-button label="Get Started" icon="pi pi-arrow-right" iconPos="right" (click)="navigateToSignIn()"
+                    class="cta-button" />
+            </div>
+            <div class="hero-stats">
+                <a href="https://github.com/Zamoula/we-chat-frontend" target="_blank" class="stat-item link-item">
+                    <i class="pi pi-github"></i>
+                    <span class="stat-label">GitHub Repository</span>
+                </a>
+                <a href="#" class="stat-item link-item">
+                    <i class="pi pi-file"></i>
+                    <span class="stat-label">Documentation</span>
+                </a>
+            </div>
+        </div>
+        <div class="hero-image-container">
+            <div class="image-glow"></div>
+            <img src="hero.png" alt="WeChat Dashboard" class="hero-image">
+        </div>
+    </main>
+
+    <section id="features" class="features-section">
+        <h2 class="section-title">Why choose <span>WeChat</span>?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="pi pi-bolt feature-icon"></i>
+                <h3>Real-time Sync</h3>
+                <p>Instant messaging across all your devices with zero lag.</p>
+            </div>
+            <div class="feature-card">
+                <i class="pi pi-shield feature-icon"></i>
+                <h3>End-to-End Encryption</h3>
+                <p>Your privacy is our priority. Every message is fully encrypted.</p>
+            </div>
+            <div class="feature-card">
+                <i class="pi pi-mobile feature-icon"></i>
+                <h3>Multi-platform</h3>
+                <p>Available on Web, iOS, and Android to keep you connected.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">WeChat</div>
+            <div class="footer-social">
+                <a href="https://www.linkedin.com/in/jamel-edine-m-rad-368918312/" target="_blank"
+                    rel="noopener noreferrer"><i class="pi pi-linkedin"></i></a>
+                <a href="https://github.com/Zamoula" target="_blank" rel="noopener noreferrer"><i
+                        class="pi pi-github"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2025 Made by Jamel M'rad
+        </div>
+    </footer>
+</div>

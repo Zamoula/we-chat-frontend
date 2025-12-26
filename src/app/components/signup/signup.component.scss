@@ -1,15 +1,258 @@
-.container {
+.auth-container {
   min-height: 100vh;
+  background-color: #0f172a;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  padding: 1rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    left: -10%;
+    width: 400px;
+    height: 400px;
+    background: rgba(99, 102, 241, 0.15);
+    filter: blur(120px);
+    border-radius: 50%;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -10%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: rgba(168, 85, 247, 0.15);
+    filter: blur(120px);
+    border-radius: 50%;
+  }
 }
-p-floatlabel > *{
-    width: 100%;
+
+.auth-box {
+  width: 100%;
+  max-width: 450px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 3rem;
+  z-index: 1;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
 }
-a{
-    text-decoration: none;
-}
-.dialog-msg{
+
+.auth-header {
   text-align: center;
+  margin-bottom: 2.5rem;
+
+  .logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+
+    .logo-icon {
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+    }
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: #94a3b8;
+  }
+}
+
+.auth-form {
+  .form-group {
+    margin-bottom: 2rem;
+
+    ::ng-deep {
+      .p-floatlabel {
+        width: 100%;
+      }
+
+      .p-inputtext,
+      .p-password input {
+        width: 100% !important;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: white;
+        padding: 0.8rem 1rem;
+        transition: all 0.3s ease;
+
+        &:focus {
+          border-color: #6366f1;
+          box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+          background: rgba(255, 255, 255, 0.08);
+        }
+      }
+
+      .p-password {
+        width: 100%;
+      }
+
+      .p-floatlabel label {
+        color: #64748b;
+        left: 1rem;
+      }
+
+      .p-floatlabel input:focus~label,
+      .p-floatlabel input.p-filled~label,
+      .p-floatlabel .p-inputwrapper-focus~label,
+      .p-floatlabel .p-inputwrapper-filled~label {
+        color: #6366f1;
+        top: -0.75rem;
+        font-size: 0.8rem;
+      }
+    }
+  }
+}
+
+.form-actions {
+  margin-top: 3rem;
+
+  ::ng-deep .auth-btn {
+    width: 100%;
+
+    .p-button {
+      width: 100%;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      border: none;
+      padding: 1rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        background: #334155;
+      }
+    }
+  }
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 2rem;
+  color: #94a3b8;
+  font-size: 0.9rem;
+
+  a {
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.back-link {
+  margin-top: 2rem;
+  z-index: 1;
+
+  a {
+    color: #64748b;
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+// Dialog Customization
+::ng-deep {
+  .p-dialog {
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    color: white;
+
+    .p-dialog-header {
+      background: transparent;
+      color: white;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 1.5rem;
+    }
+
+    .p-dialog-content {
+      background: transparent;
+      color: #94a3b8;
+      padding: 2rem;
+    }
+
+    .p-dialog-footer {
+      background: transparent;
+      border-top: none;
+    }
+  }
+}
+
+.dialog-content {
+  text-align: center;
+
+  .error-icon {
+    font-size: 3rem;
+    color: #ef4444;
+    margin-bottom: 1.5rem;
+  }
+
+  .dialog-msg {
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+
+  .dialog-info {
+    margin-bottom: 2rem;
+  }
+
+  .verify-input-group {
+    margin-bottom: 1.5rem;
+
+    input {
+      text-align: center;
+      letter-spacing: 4px;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+  }
+
+  .dialog-sub {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
 }

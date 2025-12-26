@@ -1,4 +1,5 @@
 <div class="chat-container">
+  <div class="background-glow"></div>
   <div class="chat-header">
     <div class="header-content">
       <h1 class="header-title">Home</h1>
@@ -16,24 +17,24 @@
 
   <div class="chat-list">
     @for (c of previewChats; track c.id) {
-      <div class="chat-item" (click) = "navigateToChat(c)">
-        <div class="avatar-wrapper">
-          <div class="avatar" [style.background-color]="c.color">
-            {{ c.avatar }}
-          </div>
-          @if (c.hasUnread) {
-            <span class="unread-indicator"></span>
-          }
+    <div class="chat-item" (click)="navigateToChat(c)">
+      <div class="avatar-wrapper">
+        <div class="avatar" [style.background-color]="c.color">
+          {{ c.avatar }}
         </div>
-        
-        <div class="chat-content">
-          <div class="chat-header-row">
-            <span class="chat-name">{{ c.name }}</span>
-            <span class="chat-time">{{ c.timestamp }}</span>
-          </div>
-          <div class="chat-preview">{{ c.lastchat || "Send your first message - Tap to enter" }}</div>
-        </div>
+        @if (c.hasUnread) {
+        <span class="unread-indicator"></span>
+        }
       </div>
+
+      <div class="chat-content">
+        <div class="chat-header-row">
+          <span class="chat-name">{{ c.name }}</span>
+          <span class="chat-time">{{ c.timestamp }}</span>
+        </div>
+        <div class="chat-preview">{{ c.lastchat || "Send your first message - Tap to enter" }}</div>
+      </div>
+    </div>
     }
   </div>
 
@@ -52,26 +53,26 @@
 
 <!--DIALOG-->
 <p-dialog header="New Chat" [modal]="true" [(visible)]="visible" [style]="{ width: '25rem', height: '35vh' }">
-    <p-floatlabel variant="in">
-        <input pInputText id="newChatName" [(ngModel)]="newChatName" autocomplete="off" />
-        <label for="newChatName">Room name</label>
-    </p-floatlabel>
-    <br><br>
-    <div class="type-container">
-      <span>Room type :</span>
-      <div class="flex items-center">
-          <p-radiobutton name="type" value="GROUP" [(ngModel)]="newRoom_type" inputId="type1" />
-          <label for="type1" class="ml-2">Group</label>
-      </div>
+  <p-floatlabel variant="in">
+    <input pInputText id="newChatName" [(ngModel)]="newChatName" autocomplete="off" />
+    <label for="newChatName">Room name</label>
+  </p-floatlabel>
+  <br><br>
+  <div class="type-container">
+    <span>Room type :</span>
+    <div class="flex items-center">
+      <p-radiobutton name="type" value="GROUP" [(ngModel)]="newRoom_type" inputId="type1" />
+      <label for="type1" class="ml-2">Group</label>
+    </div>
 
-      <div class="flex items-center">
-          <p-radiobutton name="type" value="PRIVATE" [(ngModel)]="newRoom_type" inputId="type2" />
-          <label for="type2" class="ml-2">Private</label>
-      </div>
+    <div class="flex items-center">
+      <p-radiobutton name="type" value="PRIVATE" [(ngModel)]="newRoom_type" inputId="type2" />
+      <label for="type2" class="ml-2">Private</label>
     </div>
-    <br><br>
-    <div class="flex justify-end gap-2">
-        <p-button label="Cancel" severity="secondary" (click)="visible = false" />
-        <p-button label="Save" (click)="createRoom()" />
-    </div>
+  </div>
+  <br><br>
+  <div class="flex justify-end gap-2">
+    <p-button label="Cancel" severity="secondary" (click)="visible = false" />
+    <p-button label="Save" (click)="createRoom()" />
+  </div>
 </p-dialog>
